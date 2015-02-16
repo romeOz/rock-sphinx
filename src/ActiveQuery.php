@@ -87,7 +87,6 @@ class ActiveQuery extends Query implements ActiveQueryInterface
      */
     public $sql;
 
-
     /**
      * Constructor.
      * @param array $modelClass the model class associated with this query
@@ -219,7 +218,10 @@ class ActiveQuery extends Query implements ActiveQueryInterface
                 $model = $this->typeCast($row, $connection);
                 //$model = $this->typeCast($row, $class::getIndexSchema($connection)->columns);
             } else {
-                $class::populateRecord($model, $row, $connection);
+                $model = $class::instantiate($row);
+                /** @var ActiveRecord|\rock\sphinx\ActiveRecord $modelClass */
+                $modelClass = get_class($model);
+                $modelClass::populateRecord($model, $row, $connection);
             }
             if (!empty($this->with)) {
                 if (isset($this->queryBuild->entities)) {
