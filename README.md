@@ -1,4 +1,4 @@
-Object Relational Mapping (ORM) for Sphinx Search.
+ORM for Sphinx Search.
 =======================
 
 This API [Sphinx](http://sphinxsearch.com/docs) full text search engine, which uses [SphinxQL](http://sphinxsearch.com/docs/current.html#sphinxql-reference).
