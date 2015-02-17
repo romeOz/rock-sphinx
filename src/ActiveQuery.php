@@ -147,12 +147,8 @@ class ActiveQuery extends Query implements ActiveQueryInterface
      */
     public function all($connection = null, $subAttributes = false)
     {
-        if (!$this->beforeFind()) {
-            return [];
-        }
-        /** @var ActiveRecord $class */
-        $class = $this->modelClass;
-        $activeRecord = $class::instantiate([]);
+        /** @var ActiveRecord $activeRecord */
+        $activeRecord = new $this->modelClass;
         if (!$activeRecord->beforeFind()) {
             return [];
         }
@@ -168,16 +164,11 @@ class ActiveQuery extends Query implements ActiveQueryInterface
                 $this->findWith($this->with, $models);
             }
             $models = $this->fillUpSnippets($models);
-            //$this->afterFind($models);
             if (!$this->asArray) {
-//                if (!$this->afterFind($models)) {
-//                    return [];
-//                }
                 foreach ($models as $model) {
                     $model->afterFind();
                 }
             } else {
-
                 $activeRecord->afterFind($models);
             }
 
@@ -199,14 +190,8 @@ class ActiveQuery extends Query implements ActiveQueryInterface
      */
     public function one($connection = null, $subAttributes = false)
     {
-        /** @var ActiveRecord $class */
-        $class = $this->modelClass;
-        /** @var ActiveRecord $model */
-        $model = $activeRecord = $class::instantiate([]);
-
-        if (!$this->beforeFind()) {
-            return null;
-        }
+        /** @var ActiveRecord $activeRecord */
+        $activeRecord = new $this->modelClass;
         if (!$activeRecord->beforeFind()) {
             return null;
         }
@@ -218,6 +203,8 @@ class ActiveQuery extends Query implements ActiveQueryInterface
                 $model = $this->typeCast($row, $connection);
                 //$model = $this->typeCast($row, $class::getIndexSchema($connection)->columns);
             } else {
+                /** @var ActiveRecord $class */
+                $class = $this->modelClass;
                 $model = $class::instantiate($row);
                 /** @var ActiveRecord|\rock\sphinx\ActiveRecord $modelClass */
                 $modelClass = get_class($model);
@@ -232,7 +219,6 @@ class ActiveQuery extends Query implements ActiveQueryInterface
                 $model = $models[0];
             }
             list ($model) = $this->fillUpSnippets([$model]);
-            //$this->afterFind($model);
             $activeRecord->afterFind($model);
             return $model;
         } else {
@@ -316,7 +302,7 @@ class ActiveQuery extends Query implements ActiveQueryInterface
     /**
      * Fetches the source for the snippets using {@see \rock\sphinx\ActiveRecord::getSnippetSource()} method.
      *
-*@param ActiveRecord[] $models raw query result rows.
+     * @param ActiveRecord[] $models raw query result rows.
      * @throws SphinxException if {@see \rock\db\ActiveQueryTrait::$asArray} enabled.
      * @return array snippet source strings
      */
