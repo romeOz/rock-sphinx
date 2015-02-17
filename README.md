@@ -27,7 +27,7 @@ Features
  * **Data Providers**
  * **Module for [Rock Framework](https://github.com/romeOz/rock)**
  
-> Bolded features are different from [Yii2 Database](https://github.com/yiisoft/yii2/tree/master/extensions/sphinx).
+> Bolded features are different from [Yii2 Sphinx Search](https://github.com/yiisoft/yii2/tree/master/extensions/sphinx).
 
 Installation
 -------------------
