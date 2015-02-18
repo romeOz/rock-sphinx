@@ -34,14 +34,14 @@ Installation
 
 From the Command Line:
 
-`composer require romeoz/rock-sphinx:*`
+`composer require romeoz/rock-sphinx:*@dev`
 
 In your composer.json:
 
 ```json
 {
     "require": {
-        "romeoz/rock-sphinx": "*"
+        "romeoz/rock-sphinx": "*@dev"
     }
 }
 ```
