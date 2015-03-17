@@ -29,8 +29,8 @@ use rock\helpers\Helper;
  *      'pagination' => ['limit' => 2, 'sort' => SORT_DESC]
  * ];
  * $provider = new \rock\sphinx\ActiveDataProvider($config);
- * $provider->get(); // get the posts in the current page
- * $provider->getPagination(); // get data pagination
+ * $provider->get(); // returns the items in the current page
+ * $provider->getPagination(); // return ActiveDataPagination
  * ```
  *
  * The following is an example of using ActiveDataProvider to provide ActiveRecord instances:
@@ -60,8 +60,8 @@ use rock\helpers\Helper;
  *     'pagination' => ['limit' => 2, 'sort' => SORT_DESC]
  * ]);
  *
- * $provider->get(); // get the posts in the current page
- * $provider->getPagination(); // get data pagination
+ * $provider->get(); // returns the items in the current page
+ * $provider->getPagination(); // return ActiveDataPagination
  */
 class ActiveDataProvider extends \rock\db\ActiveDataProvider
 {
@@ -82,12 +82,12 @@ class ActiveDataProvider extends \rock\db\ActiveDataProvider
         return $this->prepareResult($query);
     }
 
-    protected function prepareModels($subAttributes = false)
+    protected function prepareModels()
     {
         if ($this->query instanceof ActiveQuery && !isset($this->with) && !empty($this->query->with)) {
             $this->with = current($this->query->with);
         }
-        if (!$query = parent::prepareModels($subAttributes)) {
+        if (!$query = parent::prepareModels()) {
             return [];
         }
         return $this->prepareResult($query);

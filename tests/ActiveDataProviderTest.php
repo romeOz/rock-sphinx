@@ -49,7 +49,7 @@ class ActiveDataProviderTest extends SphinxTestCase
             'This article is <span>about</span> cats'
         );
         $this->assertSame(count($provider->get()), 1);
-        $this->assertNotEmpty($provider->getPagination());
+        $this->assertNotEmpty($provider->getPagination()->toArray());
         $this->assertSame($provider->getTotalCount(), 2);
     }
 
@@ -74,7 +74,7 @@ class ActiveDataProviderTest extends SphinxTestCase
             'This article is <span>about</span> cats'
         );
         $this->assertSame(count($provider->get()), 1);
-        $this->assertNotEmpty($provider->getPagination());
+        $this->assertNotEmpty($provider->getPagination()->toArray());
         $this->assertSame($provider->getTotalCount(), 2);
 
         $provider = new ActiveDataProvider([
@@ -96,7 +96,7 @@ class ActiveDataProviderTest extends SphinxTestCase
             'This article is <span>about</span> cats'
         );
         $this->assertSame(count($provider->get()), 1);
-        $this->assertNotEmpty($provider->getPagination());
+        $this->assertNotEmpty($provider->getPagination()->toArray());
         $this->assertSame($provider->getTotalCount(), 2);
 
         $provider = new ActiveDataProvider([
@@ -120,7 +120,7 @@ class ActiveDataProviderTest extends SphinxTestCase
         );
 
         $this->assertSame(count($provider->get()), 1);
-        $this->assertNotEmpty($provider->getPagination());
+        $this->assertNotEmpty($provider->getPagination()->toArray());
         $this->assertSame($provider->getTotalCount(), 2);
     }
 
@@ -150,7 +150,7 @@ class ActiveDataProviderTest extends SphinxTestCase
         );
 
         $this->assertSame(count($provider->get()), 1);
-        $this->assertNotEmpty($provider->getPagination());
+        $this->assertNotEmpty($provider->getPagination()->toArray());
         $this->assertSame($provider->getTotalCount(), 2);
         $this->assertSame(count(current($provider->toArray())),1);
     }
