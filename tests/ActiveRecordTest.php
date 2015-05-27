@@ -303,7 +303,7 @@ class ActiveRecordTest extends SphinxTestCase
         $this->assertTrue($trace->current()['cache']);
         $trace->next();
         $this->assertTrue($trace->current()['cache']);
-        ArticleIndex::find()->where(['id' => 1])->with('category')->endCache()->asArray()->all($connection);
+        ArticleIndex::find()->where(['id' => 1])->with('category')->notCache()->asArray()->all($connection);
         $trace = Trace::getIterator('db.query');
         $this->assertFalse($trace->current()['cache']);
         $trace->next();
@@ -315,7 +315,7 @@ class ActiveRecordTest extends SphinxTestCase
         ArticleIndex::find()
            ->where(['id' => 1])
            ->with(
-               ['category'=> function(ActiveQuery $query){$query->endCache();}]
+               ['category'=> function(ActiveQuery $query){$query->notCache();}]
            )
            ->asArray()
            ->all($connection);
@@ -349,9 +349,9 @@ class ActiveRecordTest extends SphinxTestCase
         ArticleIndex::find()
             ->where(['id' => 1])
             ->with(
-                ['category'=> function(ActiveQuery $query){$query->endCache();}]
+                ['category'=> function(ActiveQuery $query){$query->notCache();}]
             )
-            ->beginCache()
+            ->cache()
             ->asArray()
             ->one($connection);
         $trace = Trace::getIterator('db.query');
@@ -382,7 +382,7 @@ class ActiveRecordTest extends SphinxTestCase
         $this->assertTrue($trace->current()['cache']);
         ArticleIndex::find()
             ->where(['id' => 1])
-            ->with( ['category'=> function(ActiveQuery $query){$query->endCache();}])
+            ->with( ['category'=> function(ActiveQuery $query){$query->notCache();}])
             ->all($connection);
         $trace = Trace::getIterator('db.query');
         $this->assertTrue($trace->current()['cache']);
@@ -421,7 +421,7 @@ class ActiveRecordTest extends SphinxTestCase
         ActiveRecord::$db = $connection;
         ArticleIndex::find()
             ->where(['id' => 1])
-            ->with( ['category'=> function(ActiveQuery $query){$query->beginCache();}])
+            ->with( ['category'=> function(ActiveQuery $query){$query->cache();}])
             ->asArray()
             ->all();
         $trace = Trace::getIterator('db.query');
@@ -430,7 +430,7 @@ class ActiveRecordTest extends SphinxTestCase
         $this->assertFalse($trace->current()['cache']);
         ArticleIndex::find()
             ->where(['id' => 1])
-            ->with( ['category'=> function(ActiveQuery $query){$query->beginCache();}])
+            ->with( ['category'=> function(ActiveQuery $query){$query->cache();}])
             ->asArray()
             ->all();
         $trace = Trace::getIterator('db.query');

@@ -390,7 +390,7 @@ class QueryTest extends SphinxTestCase
         $this->assertNotEmpty((new Query())->from('article_index')->one($connection));
         $this->assertTrue(Trace::getIterator('db.query')->current()['cache']);
         $this->assertSame(Trace::getIterator('db.query')->current()['count'], 2);
-        $this->assertNotEmpty((new Query())->from('article_index')->endCache()->one($connection));
+        $this->assertNotEmpty((new Query())->from('article_index')->notCache()->one($connection));
         $this->assertFalse(Trace::getIterator('db.query')->current()['cache']);
         $this->assertSame(Trace::getIterator('db.query')->current()['count'], 3);
         $cache->flush();
@@ -403,11 +403,11 @@ class QueryTest extends SphinxTestCase
         $this->assertFalse(Trace::getIterator('db.query')->current()['cache']);
         $cache->flush();
         Trace::removeAll();
-        $this->assertNotEmpty((new Query())->from('article_index')->beginCache()->all($connection));
+        $this->assertNotEmpty((new Query())->from('article_index')->cache()->all($connection));
         $this->assertFalse(Trace::getIterator('db.query')->current()['cache']);
-        $this->assertNotEmpty((new Query())->from('article_index')->beginCache()->all($connection));
+        $this->assertNotEmpty((new Query())->from('article_index')->cache()->all($connection));
         $this->assertTrue(Trace::getIterator('db.query')->current()['cache']);
-        $this->assertNotEmpty((new Query())->from('article_index')->beginCache()->endCache()->all($connection));
+        $this->assertNotEmpty((new Query())->from('article_index')->cache()->notCache()->all($connection));
         $this->assertFalse(Trace::getIterator('db.query')->current()['cache']);
     }
 }
