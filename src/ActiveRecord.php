@@ -2,7 +2,8 @@
 
 namespace rock\sphinx;
 
-use rock\db\BaseActiveRecord;
+use rock\db\common\BaseActiveRecord;
+use rock\db\common\ConnectionInterface;
 use rock\helpers\Inflector;
 use rock\helpers\Instance;
 use rock\helpers\ObjectHelper;
@@ -72,7 +73,7 @@ abstract class ActiveRecord extends BaseActiveRecord
      * @param array $params parameters to be bound to the SQL statement during execution.
      * @return ActiveQuery the newly created {@see \rock\sphinx\ActiveQuery} instance
      */
-    public static function findBySql($sql, $params = [])
+    public static function findBySql($sql, array $params = [])
     {
         $query = static::find();
         $query->sql = $sql;
@@ -94,7 +95,7 @@ abstract class ActiveRecord extends BaseActiveRecord
      * @param array $params the parameters (name => value) to be bound to the query.
      * @return integer the number of rows updated
      */
-    public static function updateAll($attributes, $condition = '', $params = [])
+    public static function updateAll(array $attributes, $condition = '', array $params = [])
     {
         $command = static::getConnection()->createCommand();
         $command->update(static::indexName(), $attributes, $condition, $params);
@@ -116,7 +117,7 @@ abstract class ActiveRecord extends BaseActiveRecord
      * @param array $params the parameters (name => value) to be bound to the query.
      * @return integer the number of rows deleted
      */
-    public static function deleteAll($condition = '', $params = [])
+    public static function deleteAll($condition = '', array $params = [])
     {
         $command = static::getConnection()->createCommand();
         $command->delete(static::indexName(), $condition, $params);
@@ -148,11 +149,11 @@ abstract class ActiveRecord extends BaseActiveRecord
     /**
      * Returns the schema information of the Sphinx index associated with this AR class.
      *
-*@param Connection|null $connection
+     * @param ConnectionInterface|null $connection
      * @throws SphinxException
      * @return IndexSchema the schema information of the Sphinx index associated with this AR class.
      */
-    public static function getIndexSchema($connection = null)
+    public static function getIndexSchema(ConnectionInterface $connection = null)
     {
         if (!isset($connection)) {
             $connection = static::getConnection();
@@ -191,7 +192,7 @@ abstract class ActiveRecord extends BaseActiveRecord
      * @return string|array built snippet in case "source" is a string, list of built snippets
      * in case "source" is an array.
      */
-    public static function callSnippets($source, $match, $options = [])
+    public static function callSnippets($source, $match, array $options = [])
     {
         $command = static::getConnection()->createCommand();
         $command->callSnippets(static::indexName(), $source, $match, $options);
@@ -230,7 +231,7 @@ abstract class ActiveRecord extends BaseActiveRecord
      * @param array $options list of options in format: optionName => optionValue
      * @return string snippet value
      */
-    public function getSnippet($match = null, $options = [])
+    public function getSnippet($match = null, array $options = [])
     {
         if ($match !== null) {
             $this->_snippet = $this->fetchSnippet($match, $options);
@@ -245,7 +246,7 @@ abstract class ActiveRecord extends BaseActiveRecord
      * @param array $options list of options in format: optionName => optionValue
      * @return string snippet value.
      */
-    protected function fetchSnippet($match, $options = [])
+    protected function fetchSnippet($match, array $options = [])
     {
         return static::callSnippets($this->getSnippetSource(), $match, $options);
     }
@@ -349,7 +350,7 @@ abstract class ActiveRecord extends BaseActiveRecord
      * @return boolean whether the attributes are valid and the record is inserted successfully.
      * @throws \Exception in case insert failed.
      */
-    public function insert($runValidation = true, $attributes = null)
+    public function insert($runValidation = true, array $attributes = null)
     {
         if ($runValidation && !$this->validate($attributes)) {
             return false;
@@ -376,9 +377,10 @@ abstract class ActiveRecord extends BaseActiveRecord
     }
 
     /**
+     * @inheritdoc
      * @see ActiveRecord::insert()
      */
-    private function insertInternal($attributes = null)
+    private function insertInternal(array $attributes = null)
     {
         if (!$this->beforeSave(true)) {
             return false;
@@ -452,7 +454,7 @@ abstract class ActiveRecord extends BaseActiveRecord
      * being updated is outdated.
      * @throws \Exception in case update failed.
      */
-    public function update($runValidation = true, $attributeNames = null)
+    public function update($runValidation = true, array $attributeNames = null)
     {
         if ($runValidation && !$this->validate($attributeNames)) {
             return false;
@@ -479,10 +481,11 @@ abstract class ActiveRecord extends BaseActiveRecord
     }
 
     /**
+     * @inheritdoc
      * @see update()
      * @throws SphinxException
      */
-    protected function updateInternal($attributes = null)
+    protected function updateInternal(array $attributes = null)
     {
         if (!$this->beforeSave(false)) {
             return false;
@@ -617,7 +620,7 @@ abstract class ActiveRecord extends BaseActiveRecord
     /**
      * @inheritdoc
      */
-    public static function populateRecord($record, $row, $connection = null)
+    public static function populateRecord($record, $row, ConnectionInterface $connection = null)
     {
         $columns = static::getIndexSchema($connection)->columns;
         foreach ($row as $name => $value) {

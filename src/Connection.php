@@ -98,7 +98,7 @@ class Connection extends \rock\db\Connection
      * @param array $params the parameters to be bound to the SQL statement
      * @return Command the Sphinx command
      */
-    public function createCommand($sql = null, $params = [])
+    public function createCommand($sql = null, array $params = [])
     {
         //$this->open();
         $command = new Command([

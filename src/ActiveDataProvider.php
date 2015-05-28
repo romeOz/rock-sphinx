@@ -3,7 +3,7 @@
 namespace rock\sphinx;
 
 
-use rock\db\ActiveRecordInterface;
+use rock\db\common\ActiveRecordInterface;
 use rock\helpers\ArrayHelper;
 use rock\helpers\Helper;
 
@@ -63,7 +63,7 @@ use rock\helpers\Helper;
  * $provider->get(); // returns the items in the current page
  * $provider->getPagination(); // return ActiveDataPagination
  */
-class ActiveDataProvider extends \rock\db\ActiveDataProvider
+class ActiveDataProvider extends \rock\db\common\ActiveDataProvider
 {
     public $callSnippets = [];
 

@@ -5,6 +5,7 @@ namespace rock\sphinx;
 use rock\db\ActiveQueryInterface;
 use rock\db\ActiveQueryTrait;
 use rock\db\ActiveRelationTrait;
+use rock\db\common\ConnectionInterface;
 
 /**
  * ActiveQuery represents a Sphinx query associated with an Active Record class.
@@ -110,6 +111,20 @@ class ActiveQuery extends Query implements ActiveQueryInterface
     }
 
     /**
+     * @return Connection
+     */
+    public function getConnection()
+    {
+        if ($this->connection instanceof Connection) {
+            return $this->calculateCacheParams($this->connection);
+        }
+        /** @var ActiveRecord $modelClass */
+        $modelClass = $this->modelClass;
+        $this->connection = $modelClass::getConnection();
+        return $this->calculateCacheParams($this->connection);
+    }
+
+    /**
      * Sets the {@see \rock\sphinx\Query::$snippetCallback} to {@see \rock\sphinx\ActiveQuery::fetchSnippetSourceFromModels()}, which allows to
      * fetch the snippet source strings from the Active Record models, using method
      * {@see \rock\sphinx\ActiveRecord::getSnippetSource()}.
@@ -140,12 +155,12 @@ class ActiveQuery extends Query implements ActiveQueryInterface
     /**
      * Executes query and returns all results as an array.
      *
-     * @param Connection $connection the DB connection used to create the DB command.
+     * @param ConnectionInterface $connection the DB connection used to create the DB command.
      * @param boolean       $subAttributes
      * If null, the DB connection returned by {@see \rock\db\ActiveQueryTrait::$modelClass} will be used.
      * @return array|ActiveRecord[] the query results. If the query results in nothing, an empty array will be returned.
      */
-    public function all($connection = null, $subAttributes = false)
+    public function all(ConnectionInterface $connection = null, $subAttributes = false)
     {
         /** @var ActiveRecord $activeRecord */
         $activeRecord = new $this->modelClass;
@@ -181,14 +196,14 @@ class ActiveQuery extends Query implements ActiveQueryInterface
     /**
      * Executes query and returns a single row of result.
      *
-     * @param Connection $connection the DB connection used to create the DB command.
+     * @param ConnectionInterface $connection the DB connection used to create the DB command.
      * If null, the DB connection returned by {@see \rock\db\ActiveQueryTrait::$modelClass} will be used.
      * @param boolean       $subAttributes
      * @return ActiveRecord|array|null a single row of query result. Depending on the setting of {@see \rock\db\ActiveQueryTrait::$asArray},
      * the query result may be either an array or an ActiveRecord object. Null will be returned
      * if the query results in nothing.
      */
-    public function one($connection = null, $subAttributes = false)
+    public function one(ConnectionInterface $connection = null, $subAttributes = false)
     {
         /** @var ActiveRecord $activeRecord */
         $activeRecord = new $this->modelClass;
@@ -232,11 +247,11 @@ class ActiveQuery extends Query implements ActiveQueryInterface
     /**
      * Creates a DB command that can be used to execute this query.
      *
-     * @param Connection $connection the DB connection used to create the DB command.
+     * @param ConnectionInterface $connection the DB connection used to create the DB command.
      * If null, the DB connection returned by {@see \rock\db\ActiveQueryTrait::$modelClass} will be used.
      * @return Command the created DB command instance.
      */
-    public function createCommand($connection = null)
+    public function createCommand(ConnectionInterface $connection = null)
     {
         if ($this->primaryModel !== null) {
             // lazy loading a relational query
@@ -282,20 +297,6 @@ class ActiveQuery extends Query implements ActiveQueryInterface
         $command->entities = $entities;
 
         return $command;
-    }
-
-    /**
-     * @return Connection
-     */
-    public function getConnection()
-    {
-        if ($this->connection instanceof Connection) {
-            return $this->calculateCacheParams($this->connection);
-        }
-        /** @var ActiveRecord $modelClass */
-        $modelClass = $this->modelClass;
-        $this->connection = $modelClass::getConnection();
-        return $this->calculateCacheParams($this->connection);
     }
 
 

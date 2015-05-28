@@ -2,7 +2,8 @@
 namespace rock\sphinx;
 
 use rock\components\ModelEvent;
-use rock\db\AfterFindEvent;
+use rock\db\common\AfterFindEvent;
+use rock\db\common\ConnectionInterface;
 use rock\db\Expression;
 
 /**
@@ -47,13 +48,13 @@ class Query extends \rock\db\Query
      * that lets you control how the best row within a group will to be selected.
      * The possible value matches the {@see \rock\db\Query::$orderBy} one.
      */
-    public $within;
+    public $within = [];
     /**
      * @var array per-query options in format: optionName => optionValue
      * They will compose OPTION clause. This is a Sphinx specific extension
      * that lets you control a number of per-query options.
      */
-    public $options;
+    public $options = [];
     /**
      * @var callable PHP callback, which should be used to fetch source data for the snippets.
      * Such callback will receive array of query result rows as an argument and must return the
@@ -88,11 +89,11 @@ class Query extends \rock\db\Query
 
     /**
      * Creates a Sphinx command that can be used to execute this query.
-     * @param Connection $connection the Sphinx connection used to generate the SQL statement.
+     * @param ConnectionInterface $connection the Sphinx connection used to generate the SQL statement.
      * If this parameter is not given, the `sphinx` application component will be used.
      * @return Command the created Sphinx command instance.
      */
-    public function createCommand($connection = null)
+    public function createCommand(ConnectionInterface $connection = null)
     {
         if ($connection instanceof Connection) {
             $this->setConnection($connection);
@@ -109,7 +110,7 @@ class Query extends \rock\db\Query
     /**
      * @inheritdoc
      */
-    public function prepareResult($rows, $connection = null)
+    public function prepareResult($rows, ConnectionInterface $connection = null)
     {
         return parent::prepareResult($this->fillUpSnippets($rows), $connection);
     }
@@ -117,13 +118,13 @@ class Query extends \rock\db\Query
     /**
      * Executes the query and returns a single row of result.
      *
-     * @param Connection $connection the Sphinx connection used to generate the SQL statement.
+     * @param ConnectionInterface $connection the Sphinx connection used to generate the SQL statement.
      * If this parameter is not given, the `sphinx` application component will be used.
      * @param boolean       $subAttributes
      * @return array|null the first row (in terms of an array) of the query result. False is returned if the query
      * results in nothing.
      */
-    public function one($connection = null, $subAttributes = false)
+    public function one(ConnectionInterface $connection = null, $subAttributes = false)
     {
         $row = parent::one($connection, $subAttributes);
         if ($row !== null) {
@@ -158,7 +159,7 @@ class Query extends \rock\db\Query
     /**
      * @inheritdoc
      */
-    public function join($type, $table, $on = '', $params = [])
+    public function join($type, $table, $on = '', array $params = [])
     {
         throw new SphinxException('"' . __METHOD__ . '" is not supported.');
     }
@@ -166,7 +167,7 @@ class Query extends \rock\db\Query
     /**
      * @inheritdoc
      */
-    public function innerJoin($table, $on = '', $params = [])
+    public function innerJoin($table, $on = '', array $params = [])
     {
         throw new SphinxException('"' . __METHOD__ . '" is not supported.');
     }
@@ -174,7 +175,7 @@ class Query extends \rock\db\Query
     /**
      * @inheritdoc
      */
-    public function leftJoin($table, $on = '', $params = [])
+    public function leftJoin($table, $on = '', array $params = [])
     {
         throw new SphinxException('"' . __METHOD__ . '" is not supported.');
     }
@@ -182,7 +183,7 @@ class Query extends \rock\db\Query
     /**
      * @inheritdoc
      */
-    public function rightJoin($table, $on = '', $params = [])
+    public function rightJoin($table, $on = '', array $params = [])
     {
         throw new SphinxException('"' . __METHOD__ . '" is not supported.');
     }
@@ -262,7 +263,7 @@ class Query extends \rock\db\Query
      * @return static the query object itself
      * @see snippetCallback
      */
-    public function snippetCallback($callback)
+    public function snippetCallback(callable $callback)
     {
         $this->snippetCallback = $callback;
 
@@ -307,7 +308,7 @@ class Query extends \rock\db\Query
     /**
      * Builds a snippets from provided source data.
      *
-*@param array $source the source data to extract a snippet from.
+     * @param array $source the source data to extract a snippet from.
      * @throws SphinxException in case {@see \rock\sphinx\Query::$match} is not specified.
      * @return array snippets list.
      */
@@ -319,7 +320,7 @@ class Query extends \rock\db\Query
     /**
      * Builds a snippets from provided source data by the given index.
      *
-*@param array $source the source data to extract a snippet from.
+     * @param array $source the source data to extract a snippet from.
      * @param string $from name of the source index.
      * @return array snippets list.
      * @throws SphinxException in case {@see \rock\sphinx\Query::$match} is not specified.
@@ -341,7 +342,7 @@ class Query extends \rock\db\Query
     /**
      * @inheritdoc
      */
-    protected function queryScalar($selectExpression, $connection)
+    protected function queryScalar($selectExpression, ConnectionInterface $connection)
     {
         $select = $this->select;
         $limit = $this->limit;
@@ -397,9 +398,10 @@ class Query extends \rock\db\Query
             'snippetOptions' => $from->snippetOptions,
         ]);
     }
-    public function getRawSql($connection = null)
+
+    public function getRawSql(ConnectionInterface $connection = null)
     {
-        if ($connection instanceof Connection) {
+        if (isset($connection)) {
             $this->setConnection($connection);
         }
         $connection = $this->getConnection();

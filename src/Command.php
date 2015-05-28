@@ -58,7 +58,7 @@ class Command extends \rock\db\Command
      * @param array $rows the rows to be batch inserted into the index
      * @return static the command object itself
      */
-    public function batchInsert($index, $columns, $rows)
+    public function batchInsert($index, array $columns, array $rows)
     {
         $params = [];
         $sql = $this->connection->getQueryBuilder()->batchInsert($index, $columns, $rows, $params);
@@ -85,7 +85,7 @@ class Command extends \rock\db\Command
      * @param array $columns the column data (name => value) to be replaced into the index.
      * @return static the command object itself
      */
-    public function replace($index, $columns)
+    public function replace($index, array $columns)
     {
         $params = [];
         $sql = $this->connection->getQueryBuilder()->replace($index, $columns, $params);
@@ -112,7 +112,7 @@ class Command extends \rock\db\Command
      * @param array $rows the rows to be batch replaced in the index
      * @return static the command object itself
      */
-    public function batchReplace($index, $columns, $rows)
+    public function batchReplace($index, array $columns, array $rows)
     {
         $params = [];
         $sql = $this->connection->getQueryBuilder()->batchReplace($index, $columns, $rows, $params);
@@ -140,7 +140,7 @@ class Command extends \rock\db\Command
      * @param array $options list of options in format: optionName => optionValue
      * @return static the command object itself
      */
-    public function update($index, $columns, $condition = '', $params = [], $options = [])
+    public function update($index, array $columns, $condition = '', array $params = [], array $options = [])
     {
         $sql = $this->connection->getQueryBuilder()->update($index, $columns, $condition, $params, $options);
 
@@ -168,7 +168,7 @@ class Command extends \rock\db\Command
      * @param array $options list of options in format: optionName => optionValue
      * @return static the command object itself
      */
-    public function callSnippets($index, $source, $match, $options = [])
+    public function callSnippets($index, $source, $match, array $options = [])
     {
         $params = [];
         $sql = $this->connection->getQueryBuilder()->callSnippets($index, $source, $match, $options, $params);
@@ -196,7 +196,7 @@ class Command extends \rock\db\Command
     /**
      * @inheritdoc
      */
-    public function createTable($table, $columns, $options = null, $exists = false)
+    public function createTable($table, array $columns, $options = null, $exists = false)
     {
         throw new SphinxException(SphinxException::UNKNOWN_METHOD, ['method' => __METHOD__]);
     }

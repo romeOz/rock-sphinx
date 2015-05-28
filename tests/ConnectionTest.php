@@ -2,7 +2,7 @@
 
 namespace rockunit;
 
-use rock\db\DbException;
+use rock\db\common\DbException;
 use rock\sphinx\Connection;
 
 /**

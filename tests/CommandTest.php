@@ -3,7 +3,7 @@
 namespace rockunit;
 
 use rock\db\DataReader;
-use rock\db\DbException;
+use rock\db\common\DbException;
 
 /**
  * @group search
