@@ -342,7 +342,7 @@ class Query extends \rock\db\Query
     /**
      * @inheritdoc
      */
-    protected function queryScalar($selectExpression, ConnectionInterface $connection)
+    protected function queryScalar($selectExpression, ConnectionInterface $connection = null)
     {
         $select = $this->select;
         $limit = $this->limit;

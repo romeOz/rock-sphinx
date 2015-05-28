@@ -112,7 +112,7 @@ class Connection extends \rock\db\Connection
     /**
      * This method is not supported by Sphinx.
      *
-*@param string $sequenceName name of the sequence object
+     * @param string $sequenceName name of the sequence object
      * @return string the row ID of the last row inserted, or the last value retrieved from the sequence object
      * @throws SphinxException always.
      */
