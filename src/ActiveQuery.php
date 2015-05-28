@@ -2,9 +2,9 @@
 
 namespace rock\sphinx;
 
-use rock\db\ActiveQueryInterface;
-use rock\db\ActiveQueryTrait;
-use rock\db\ActiveRelationTrait;
+use rock\db\common\ActiveQueryInterface;
+use rock\db\common\ActiveQueryTrait;
+use rock\db\common\ActiveRelationTrait;
 use rock\db\common\ConnectionInterface;
 
 /**
