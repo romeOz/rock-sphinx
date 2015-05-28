@@ -193,7 +193,7 @@ class Query extends \rock\db\Query
      * @return static the query object itself
      * @see addOptions()
      */
-    public function options($options)
+    public function options(array $options)
     {
         $this->options = $options;
 
@@ -206,13 +206,9 @@ class Query extends \rock\db\Query
      * @return static the query object itself
      * @see options()
      */
-    public function addOptions($options)
+    public function addOptions(array $options)
     {
-        if (is_array($this->options)) {
-            $this->options = array_merge($this->options, $options);
-        } else {
-            $this->options = $options;
-        }
+        $this->options = array_merge($this->options, $options);
 
         return $this;
     }
@@ -247,11 +243,7 @@ class Query extends \rock\db\Query
     public function addWithin($columns)
     {
         $columns = $this->normalizeOrderBy($columns);
-        if ($this->within === null) {
-            $this->within = $columns;
-        } else {
-            $this->within = array_merge($this->within, $columns);
-        }
+        $this->within = array_merge($this->within, $columns);
 
         return $this;
     }
