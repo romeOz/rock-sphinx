@@ -83,7 +83,7 @@ class QueryBuilder implements ObjectInterface
         $params = empty($params) ? $query->params : array_merge($params, $query->params);
 
         $from = $query->from;
-        if ($from === null && $query instanceof ActiveQuery) {
+        if (empty($from) && $query instanceof ActiveQuery) {
             /* @var $modelClass ActiveRecord */
             $modelClass = $query->modelClass;
             $from = [$modelClass::indexName()];
