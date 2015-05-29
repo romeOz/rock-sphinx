@@ -277,7 +277,7 @@ class ActiveQuery extends Query implements ActiveQueryInterface
             }
         }
 
-        if ($connection instanceof Connection) {
+        if (isset($connection)) {
             $this->setConnection($connection);
         }
         $connection = $this->getConnection();
@@ -326,7 +326,7 @@ class ActiveQuery extends Query implements ActiveQueryInterface
     protected function callSnippets(array $source)
     {
         $from = $this->from;
-        if ($from === null) {
+        if (empty($from)) {
             /** @var ActiveRecord $modelClass */
             $modelClass = $this->modelClass;
             $tableName = $modelClass::indexName();

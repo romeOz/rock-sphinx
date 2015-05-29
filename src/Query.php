@@ -80,7 +80,7 @@ class Query extends \rock\db\Query
     /**
      * @var array query options for the call snippet.
      */
-    public $snippetOptions;
+    public $snippetOptions = [];
 
     /**
      * @var Connection|string
@@ -95,7 +95,7 @@ class Query extends \rock\db\Query
      */
     public function createCommand(ConnectionInterface $connection = null)
     {
-        if ($connection instanceof Connection) {
+        if (isset($connection)) {
             $this->setConnection($connection);
         }
         $connection = $this->getConnection();
@@ -268,7 +268,7 @@ class Query extends \rock\db\Query
      * @return static the query object itself
      * @see snippetCallback
      */
-    public function snippetOptions($options)
+    public function snippetOptions(array $options)
     {
         $this->snippetOptions = $options;
 
@@ -319,6 +319,7 @@ class Query extends \rock\db\Query
      */
     protected function callSnippetsInternal(array $source, $from)
     {
+        /** @var Connection $connection */
         $connection = $this->getConnection();
         $match = $this->match;
         if ($match === null) {

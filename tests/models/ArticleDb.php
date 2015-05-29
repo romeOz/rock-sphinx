@@ -2,7 +2,6 @@
 
 namespace rockunit\models;
 
-use rock\db\ActiveQuery;
 use rockunit\db\models\ActiveRecord as ActiveRecordDB;
 
 class ArticleDb extends ActiveRecordDB
@@ -16,7 +15,7 @@ class ArticleDb extends ActiveRecordDB
     {
 
         return $this->hasOne(ArticleIndex::className(), ['id' => 'id']);
-//        return new ActiveQuery(ArticleIndex::className(), [
+//        return new \rock\sphinx\ActiveQuery(ArticleIndex::className(), [
 //            'primaryModel' => $this,
 //            'link' => ['id' => 'id'],
 //            'multiple' => false,
