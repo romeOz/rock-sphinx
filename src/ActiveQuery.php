@@ -23,9 +23,9 @@ use rock\db\common\ConnectionInterface;
  *
  * ActiveQuery also provides the following additional query options:
  *
- * - {@see \rock\db\ActiveQueryInterface::with()}: list of relations that this query should be performed with.
- * - {@see \rock\db\ActiveQueryInterface::indexBy()}: the name of the column by which the query result should be indexed.
- * - {@see \rock\db\ActiveQueryInterface::asArray()}: whether to return each record as an array.
+ * - {@see \rock\db\common\ActiveQueryInterface::with()}: list of relations that this query should be performed with.
+ * - {@see \rock\db\common\ActiveQueryInterface::indexBy()}: the name of the column by which the query result should be indexed.
+ * - {@see \rock\db\common\ActiveQueryInterface::asArray()}: whether to return each record as an array.
  *
  * These options can be configured using methods of the same name. For example:
  *
@@ -68,7 +68,7 @@ use rock\db\common\ConnectionInterface;
  * A relation is specified by {@see \rock\db\ActiveRelationTrait::$link} which represents the association between columns
  * of different tables; and the multiplicity of the relation is indicated by {@see \rock\db\ActiveRelationTrait::$multiple}.
  *
- * If a relation involves a pivot table, it may be specified by {@see \rock\db\ActiveQueryInterface::via()}.
+ * If a relation involves a pivot table, it may be specified by {@see \rock\db\common\ActiveQueryInterface::via()}.
  * This methods may only be called in a relational context. Same is true for {@see \rock\db\ActiveRelationTrait::inverseOf()}, which
  * marks a relation as inverse of another relation.
  */

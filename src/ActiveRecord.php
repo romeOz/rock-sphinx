@@ -322,16 +322,16 @@ abstract class ActiveRecord extends BaseActiveRecord
      * 1. call {@see \rock\components\Model::beforeValidate()} when `$runValidation` is true. If validation
      *    fails, it will skip the rest of the steps;
      * 2. call {@see \rock\components\Model::afterValidate()} when `$runValidation` is true.
-     * 3. call {@see \rock\db\BaseActiveRecord::beforeSave()}. If the method returns false, it will skip the
+     * 3. call {@see \rock\db\common\BaseActiveRecord::beforeSave()}. If the method returns false, it will skip the
      *    rest of the steps;
      * 4. insert the record into index. If this fails, it will skip the rest of the steps;
-     * 5. call {@see \rock\db\BaseActiveRecord::afterSave()};
+     * 5. call {@see \rock\db\common\BaseActiveRecord::afterSave()};
      *
      * In the above step 1, 2, 3 and 5, events {@see \rock\components\Model::EVENT_BEFORE_VALIDATE},
-     * {@see \rock\db\BaseActiveRecord::EVENT_BEFORE_INSERT}, {@see \rock\db\BaseActiveRecord::EVENT_AFTER_INSERT} and {@see \rock\components\Model::EVENT_AFTER_VALIDATE}
+     * {@see \rock\db\common\BaseActiveRecord::EVENT_BEFORE_INSERT}, {@see \rock\db\common\BaseActiveRecord::EVENT_AFTER_INSERT} and {@see \rock\components\Model::EVENT_AFTER_VALIDATE}
      * will be raised by the corresponding methods.
      *
-     * Only the {@see \rock\db\BaseActiveRecord::$dirtyAttributes}(changed attribute values) will be inserted.
+     * Only the {@see \rock\db\common\BaseActiveRecord::$dirtyAttributes}(changed attribute values) will be inserted.
      *
      * For example, to insert an article record:
      *
@@ -412,16 +412,16 @@ abstract class ActiveRecord extends BaseActiveRecord
      * 1. call {@see \rock\components\Model::beforeValidate()} when `$runValidation` is true. If validation
      *    fails, it will skip the rest of the steps;
      * 2. call {@see \rock\components\Model::afterValidate()} when `$runValidation` is true.
-     * 3. call {@see \rock\db\BaseActiveRecord::beforeSave()}. If the method returns false, it will skip the
+     * 3. call {@see \rock\db\common\BaseActiveRecord::beforeSave()}. If the method returns false, it will skip the
      *    rest of the steps;
      * 4. save the record into index. If this fails, it will skip the rest of the steps;
-     * 5. call {@see \rock\db\BaseActiveRecord::afterSave()};
+     * 5. call {@see \rock\db\common\BaseActiveRecord::afterSave()};
      *
      * In the above step 1, 2, 3 and 5, events {@see \rock\components\Model::EVENT_BEFORE_VALIDATE},
-     * {@see \rock\db\BaseActiveRecord::EVENT_BEFORE_UPDATE}, {@see \rock\db\BaseActiveRecord::EVENT_AFTER_UPDATE} and {@see \rock\components\Model::EVENT_AFTER_VALIDATE}
+     * {@see \rock\db\common\BaseActiveRecord::EVENT_BEFORE_UPDATE}, {@see \rock\db\common\BaseActiveRecord::EVENT_AFTER_UPDATE} and {@see \rock\components\Model::EVENT_AFTER_VALIDATE}
      * will be raised by the corresponding methods.
      *
-     * Only the {@see \rock\db\BaseActiveRecord::$dirtyAttributes}(changed attribute values) will be saved into database.
+     * Only the {@see \rock\db\common\BaseActiveRecord::$dirtyAttributes}(changed attribute values) will be saved into database.
      *
      * For example, to update an article record:
      *
@@ -449,8 +449,8 @@ abstract class ActiveRecord extends BaseActiveRecord
      * @param array $attributeNames list of attributes that need to be saved. Defaults to null,
      * meaning all attributes that are loaded from DB will be saved.
      * @return integer|boolean the number of rows affected, or false if validation fails
-     * or {@see \rock\db\BaseActiveRecord::beforeSave()} stops the updating process.
-     * @throws SphinxException if {@see \rock\db\BaseActiveRecord::optimisticLock()}(optimistic locking) is enabled and the data
+     * or {@see \rock\db\common\BaseActiveRecord::beforeSave()} stops the updating process.
+     * @throws SphinxException if {@see \rock\db\common\BaseActiveRecord::optimisticLock()}(optimistic locking) is enabled and the data
      * being updated is outdated.
      * @throws \Exception in case update failed.
      */
@@ -549,17 +549,17 @@ abstract class ActiveRecord extends BaseActiveRecord
      *
      * This method performs the following steps in order:
      *
-     * 1. call {@see \rock\db\BaseActiveRecord::beforeDelete()}. If the method returns false, it will skip the
+     * 1. call {@see \rock\db\common\BaseActiveRecord::beforeDelete()}. If the method returns false, it will skip the
      *    rest of the steps;
      * 2. delete the record from the index;
-     * 3. call {@see \rock\db\BaseActiveRecord::afterDelete()}.
+     * 3. call {@see \rock\db\common\BaseActiveRecord::afterDelete()}.
      *
-     * In the above step 1 and 3, events named {@see \rock\db\BaseActiveRecord::EVENT_BEFORE_DELETE} and {@see \rock\db\BaseActiveRecord::EVENT_AFTER_DELETE}
+     * In the above step 1 and 3, events named {@see \rock\db\common\BaseActiveRecord::EVENT_BEFORE_DELETE} and {@see \rock\db\common\BaseActiveRecord::EVENT_AFTER_DELETE}
      * will be raised by the corresponding methods.
      *
      * @return integer|boolean the number of rows deleted, or false if the deletion is unsuccessful for some reason.
      * Note that it is possible the number of rows deleted is 0, even though the deletion execution is successful.
-     * @throws SphinxException if {@see \rock\db\BaseActiveRecord::optimisticLock()}(optimistic locking) is enabled and the data
+     * @throws SphinxException if {@see \rock\db\common\BaseActiveRecord::optimisticLock()}(optimistic locking) is enabled and the data
      * being deleted is outdated.
      * @throws \Exception in case delete failed.
      */
@@ -604,7 +604,7 @@ abstract class ActiveRecord extends BaseActiveRecord
     /**
      * Returns a value indicating whether the given active record is the same as the current one.
      * The comparison is made by comparing the index names and the primary key values of the two active records.
-     * If one of the records {@see \rock\db\BaseActiveRecord::$isNewRecord}(is new) they are also considered not equal.
+     * If one of the records {@see \rock\db\common\BaseActiveRecord::$isNewRecord}(is new) they are also considered not equal.
      * @param ActiveRecord $record record to compare to
      * @return boolean whether the two active records refer to the same row in the same index.
      */
