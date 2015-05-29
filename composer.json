@@ -29,8 +29,7 @@
         "romeoz/rock-cache": "required by Rock Cache",
         "romeoz/rock-validate": "required by Rock Valiadte",
         "romeoz/rock-sanitize": "required by Rock Sanitize",
-        "romeoz/rock-behaviors": "required by Rock Behaviors",
-        "romeoz/rock-di": "required by module Rock Dependency Injection"
+        "romeoz/rock-behaviors": "required by Rock Behaviors"
     },
     "autoload": {
         "psr-4": {
