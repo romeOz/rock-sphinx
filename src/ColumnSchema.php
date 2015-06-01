@@ -56,24 +56,7 @@ class ColumnSchema implements ObjectInterface
      */
     public function phpTypecast($value)
     {
-        if ($value === null || gettype($value) === $this->phpType || $value instanceof Expression) {
-            return $value;
-        }
-        if ($value === '' && $this->type !== Schema::TYPE_STRING) {
-            return null;
-        }
-        switch ($this->phpType) {
-            case 'string':
-                return is_resource($value) ? $value : (string) $value;
-            case 'integer':
-                return (int) $value;
-            case 'boolean':
-                return (bool) $value;
-            case 'double':
-                return (double) $value;
-        }
-
-        return $value;
+        return $this->typecast($value);
     }
 
     /**
@@ -88,5 +71,33 @@ class ColumnSchema implements ObjectInterface
         // the default implementation does the same as casting for PHP but it should be possible
         // to override this with annotation of explicit PDO type.
         return $this->phpTypecast($value);
+    }
+
+    /**
+     * Converts the input value according to {@see \rock\sphinx\ColumnSchema::$phpType} after retrieval from the database.
+     * If the value is null or an {@see \rock\db\Expression}, it will not be converted.
+     * @param mixed $value input value
+     * @return mixed converted value
+     */
+    protected function typecast($value)
+    {
+        if ($value === '' && $this->type !== Schema::TYPE_STRING) {
+            return null;
+        }
+        if ($value === null || gettype($value) === $this->phpType || $value instanceof Expression) {
+            return $value;
+        }
+        switch ($this->phpType) {
+            case 'resource':
+            case 'string':
+                return is_resource($value) ? $value : (string) $value;
+            case 'integer':
+                return (int) $value;
+            case 'boolean':
+                return (bool) $value;
+            case 'double':
+                return (double) $value;
+        }
+        return $value;
     }
 }
