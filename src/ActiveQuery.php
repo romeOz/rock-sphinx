@@ -177,13 +177,7 @@ class ActiveQuery extends Query implements ActiveQueryInterface
      */
     public function one(ConnectionInterface $connection = null, $subattributes = false)
     {
-        $row = parent::one($connection, $subattributes);
-        if ($row !== null) {
-            $models = $this->prepareResult([$row], $connection);
-            return reset($models) ?: null;
-        } else {
-            return null;
-        }
+        return parent::one($connection, $subattributes);
     }
 
     /**
