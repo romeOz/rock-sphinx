@@ -162,35 +162,13 @@ class ActiveQuery extends Query implements ActiveQueryInterface
      */
     public function all(ConnectionInterface $connection = null, $subAttributes = false)
     {
-        /** @var ActiveRecord $activeRecord */
-        $activeRecord = new $this->modelClass;
-        if (!$activeRecord->beforeFind()) {
+        // before
+        /** @var ActiveRecord $model */
+        $model = new $this->modelClass;
+        if (!$model->beforeFind()) {
             return [];
         }
-        $command = $this->createCommand($connection);
-        $rows = $command->queryAll(null, $subAttributes);
-
-        if (!empty($rows)) {
-            $models = $this->createModels($rows);
-            if (!empty($this->with)) {
-                if (isset($this->queryBuild->entities)) {
-                    $this->queryBuild->entities = [];
-                }
-                $this->findWith($this->with, $models);
-            }
-            $models = $this->fillUpSnippets($models);
-            if (!$this->asArray) {
-                foreach ($models as $model) {
-                    $model->afterFind();
-                }
-            } else {
-                $activeRecord->afterFind($models);
-            }
-
-            return $models;
-        } else {
-            return [];
-        }
+        return parent::all($connection, $subAttributes);
     }
 
     /**
@@ -205,40 +183,48 @@ class ActiveQuery extends Query implements ActiveQueryInterface
      */
     public function one(ConnectionInterface $connection = null, $subattributes = false)
     {
-        /** @var ActiveRecord $activeRecord */
-        $activeRecord = new $this->modelClass;
-        if (!$activeRecord->beforeFind()) {
+        /** @var ActiveRecord $model */
+        $model  = new $this->modelClass;
+        if (!$model->beforeFind()) {
             return null;
         }
-        $command = $this->createCommand($connection);
-        $row = $command->queryOne(null, $subattributes);
-
-        if ($row !== null) {
-            if ($this->asArray) {
-                $model = $this->typeCast($row, $connection);
-                //$model = $this->typeCast($row, $class::getIndexSchema($connection)->columns);
-            } else {
-                /** @var ActiveRecord $class */
-                $class = $this->modelClass;
-                $model = $class::instantiate($row);
-                /** @var ActiveRecord|\rock\sphinx\ActiveRecord $modelClass */
-                $modelClass = get_class($model);
-                $modelClass::populateRecord($model, $row, $connection);
-            }
-            if (!empty($this->with)) {
-                if (isset($this->queryBuild->entities)) {
-                    $this->queryBuild->entities = [];
-                }
-                $models = [$model];
-                $this->findWith($this->with, $models);
-                $model = $models[0];
-            }
-            list ($model) = $this->fillUpSnippets([$model]);
-            $activeRecord->afterFind($model);
-            return $model;
+        $row = parent::one($connection, $subattributes);
+        if ($row !== false) {
+            $models = $this->prepareResult([$row], $connection);
+            return reset($models) ?: null;
         } else {
             return null;
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function prepareResult($rows, ConnectionInterface $connection = null)
+    {
+        if (empty($rows)) {
+            return [];
+        }
+        $models = $this->createModels($rows);
+        if (!empty($this->with)) {
+            if (isset($this->queryBuild->entities)) {
+                $this->queryBuild->entities = [];
+            }
+            $this->findWith($this->with, $models);
+        }
+        $models = $this->fillUpSnippets($models);
+        if (!$this->asArray) {
+            foreach ($models as $model) {
+                $model->afterFind();
+            }
+        } else {
+            /** @var ActiveRecord $class */
+            $class = $this->modelClass;
+            /** @var ActiveRecord $activeRecord */
+            $activeRecord = $class::instantiate([]);
+            $activeRecord->afterFind($models);
+        }
+        return $models;
     }
 
     /** @var  QueryBuilder */
