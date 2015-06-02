@@ -154,16 +154,16 @@ class Query extends \rock\db\Query
 
     /**
      * Executes the query and returns the complete search result including e.g. hits, facets.
-     * @param Connection $db the Sphinx connection used to generate the SQL statement.
+     * @param ConnectionInterface  $connection the Sphinx connection used to generate the SQL statement.
      * @return array the query results.
      */
-    public function search($db = null)
+    public function search(ConnectionInterface $connection = null)
     {
         if (empty($this->facets)) {
-            $rows = $this->all($db);
+            $rows = $this->all($connection);
             $facets = [];
         } else {
-                $command = $this->createCommand($db);
+                $command = $this->createCommand($connection);
                 $dataReader = $command->query();
                 $rows = $dataReader->readAll();
                 $rawFacets = [];
@@ -171,7 +171,7 @@ class Query extends \rock\db\Query
                         $rawFacets[] = $dataReader->readAll();
                     }
             $facets = $this->normalizeFacetResults($rawFacets);
-            $rows = $this->populate($rows);
+            $rows = $this->prepareResult($rows, $connection);
         }
 
         return [
