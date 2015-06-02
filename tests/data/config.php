@@ -9,8 +9,8 @@ return [
         ],
         'db' => [
             'dsn' => 'mysql:host=127.0.0.1;dbname=rocktest',
-            'username' => 'rock',
-            'password' => 'rock',
+            'username' => 'travis',
+            'password' => '',
             'fixture' => __DIR__ . '/sphinx/source.sql',
         ],
     ],
