@@ -815,7 +815,7 @@ class QueryBuilder implements ObjectInterface
     /**
      * Creates an SQL expressions with the `IN` operator.
      *
-*@param IndexSchema[] $indexes list of indexes, which affected by query
+     * @param IndexSchema[] $indexes list of indexes, which affected by query
      * @param string $operator the operator to use (e.g. `IN` or `NOT IN`)
      * @param array $operands the first operand is the column name. If it is an array
      * a composite IN condition will be generated.
