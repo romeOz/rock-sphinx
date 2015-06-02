@@ -94,7 +94,7 @@ class ActiveDataProvider extends \rock\db\common\ActiveDataProvider
         }
         return $this->_facets;
     }
-    
+
     /**
      * Returns results of the specified facet.
      * @param string $name facet name
