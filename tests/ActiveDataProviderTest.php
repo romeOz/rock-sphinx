@@ -3,6 +3,7 @@
 namespace rockunit;
 
 use rock\sphinx\ActiveDataProvider;
+use rock\sphinx\Query;
 use rockunit\models\ActiveRecord;
 use rockunit\models\ArticleDb;
 use rockunit\models\ArticleIndex;
@@ -153,5 +154,24 @@ class ActiveDataProviderTest extends SphinxTestCase
         $this->assertNotEmpty($provider->getPagination()->toArray());
         $this->assertSame($provider->getTotalCount(), 2);
         $this->assertSame(count(current($provider->toArray())),1);
+    }
+
+    /**
+     * @depends testQuery
+     */
+    public function testFacetQuery()
+    {
+        $query = new Query();
+        $query->from('article_index');
+        $query->facets([
+            'author_id'
+        ]);
+        $provider = new ActiveDataProvider([
+            'query' => $query,
+            'connection' => $this->getConnection(),
+        ]);
+        $models = $provider->get();
+        $this->assertEquals(2, count($models));
+        $this->assertEquals(2, count($provider->getFacet('author_id')));
     }
 }
