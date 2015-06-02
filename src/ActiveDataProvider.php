@@ -73,6 +73,43 @@ class ActiveDataProvider extends \rock\db\common\ActiveDataProvider
     /** @var  string */
     public $with;
 
+    /**
+     * @var array query facet results.
+     */
+    private $_facets;
+    /**
+     * @param array $facets query facet results.
+     */
+    public function setFacets($facets)
+    {
+        $this->_facets = $facets;
+    }
+    /**
+     * @return array query facet results.
+     */
+    public function getFacets()
+    {
+        if (!is_array($this->_facets)) {
+            $this->prepareModels();
+        }
+        return $this->_facets;
+    }
+    
+    /**
+     * Returns results of the specified facet.
+     * @param string $name facet name
+     * @throws SphinxException if requested facet does not present in results.
+     * @return array facet results.
+     */
+    public function getFacet($name)
+    {
+        $facets = $this->getFacets();
+        if (!isset($facets[$name])) {
+            throw new SphinxException("Facet '{$name}' does not present.");
+        }
+        return $facets[$name];
+    }
+
     protected function prepareArray()
     {
         if (!$query = parent::prepareArray()) {
@@ -87,10 +124,32 @@ class ActiveDataProvider extends \rock\db\common\ActiveDataProvider
         if ($this->query instanceof ActiveQuery && !isset($this->with) && !empty($this->query->with)) {
             $this->with = current($this->query->with);
         }
-        if (!$query = parent::prepareModels()) {
+
+        if (!$this->totalCount = $this->calculateTotalCount()) {
             return [];
         }
-        return $this->prepareResult($query);
+        $activePagination = $this->getPagination();
+
+        $this->query
+            ->limit($activePagination->limit)
+            ->offset($activePagination->offset);
+
+        if (empty($this->query->facets)) {
+            $this->setFacets([]);
+            $result = $this->fetchMode
+                ? $this->query->createCommand($this->connection)->queryAll($this->fetchMode, $this->subattributes)
+                : $this->query->all($this->connection, $this->subattributes);
+        } else {
+            $results = $this->query->search($this->connection);
+            $this->setFacets($results['facets']);
+            $result = $results['hits'];
+        }
+
+        if ($this->keys === null) {
+            $this->keys = $this->prepareKeys($result);
+        }
+
+        return $result ? $this->prepareResult($result) : [];
     }
 
     protected function prepareResult($query)

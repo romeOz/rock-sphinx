@@ -138,13 +138,13 @@ class Query extends \rock\db\Query
      *
      * @param ConnectionInterface $connection the Sphinx connection used to generate the SQL statement.
      * If this parameter is not given, the `sphinx` application component will be used.
-     * @param boolean       $subAttributes
+     * @param boolean       $subattributes
      * @return array|null the first row (in terms of an array) of the query result. False is returned if the query
      * results in nothing.
      */
-    public function one(ConnectionInterface $connection = null, $subAttributes = false)
+    public function one(ConnectionInterface $connection = null, $subattributes = false)
     {
-        $row = parent::one($connection, $subAttributes);
+        $row = parent::one($connection, $subattributes);
         if ($row !== null) {
             list ($row) = $this->fillUpSnippets([$row]);
         }
@@ -154,13 +154,14 @@ class Query extends \rock\db\Query
 
     /**
      * Executes the query and returns the complete search result including e.g. hits, facets.
-     * @param ConnectionInterface  $connection the Sphinx connection used to generate the SQL statement.
+     * @param ConnectionInterface $connection the Sphinx connection used to generate the SQL statement.
+     * @param bool $subattributes
      * @return array the query results.
      */
-    public function search(ConnectionInterface $connection = null)
+    public function search(ConnectionInterface $connection = null, $subattributes = false)
     {
         if (empty($this->facets)) {
-            $rows = $this->all($connection);
+            $rows = $this->all($connection, $subattributes);
             $facets = [];
         } else {
             $command = $this->createCommand($connection);
