@@ -30,6 +30,11 @@ class QueryBuilder implements ObjectInterface
      * Defaults to an empty space. This is mainly used by {@see \rock\sphinx\QueryBuilder::build()} when generating a SQL statement.
      */
     public $separator = " ";
+    /**
+     * @var string separator between different SQL queries.
+     * This is mainly used by {@see \rock\sphinx\QueryBuilder::build()} when generating a SQL statement.
+     */
+    public $querySeparator = "; ";
 
     /**
      * @var array map of query condition to builder methods.
@@ -102,7 +107,14 @@ class QueryBuilder implements ObjectInterface
             $this->buildFacets($query->facets, $params),
         ];
 
-        return [implode($this->separator, array_filter($clauses)), $params];
+        $sql = implode($this->separator, array_filter($clauses));
+
+        $showMetaSql = $this->buildShowMeta($query->showMeta, $params);
+        if (!empty($showMetaSql)) {
+            $sql .= $this->querySeparator . $showMetaSql;
+        }
+
+        return [$sql, $params];
     }
 
     /**
@@ -1074,10 +1086,10 @@ class QueryBuilder implements ObjectInterface
     }
 
     /**
-     * @param array $facets
-     * @param array $params
-     * @return string
-     * @throws SphinxException
+     * @param array $facets facet specifications
+     * @param array $params the binding parameters to be populated
+     * @return string the FACET clause build from {@see \rock\sphinx\QueryBuilder::query}
+     * @throws SphinxException on invalid facet specification.
      */
     protected function buildFacets(array $facets, array &$params)
     {
@@ -1115,6 +1127,36 @@ class QueryBuilder implements ObjectInterface
         }
         return implode($this->separator, $sqlParts);
     }
+
+    /**
+     * Builds SHOW META query.
+     * @param boolean|string|Expression $showMeta show meta specification.
+     * @param array $params the binding parameters to be populated
+     * @return string SHOW META query, if it does not required - empty string.
+     */
+    protected function buildShowMeta($showMeta, &$params)
+    {
+        if (empty($showMeta)) {
+            return '';
+        }
+        $sql = 'SHOW META';
+        if (is_bool($showMeta)) {
+            return $sql;
+        }
+        if ($showMeta instanceof Expression) {
+            foreach ($showMeta->params as $n => $v) {
+                $params[$n] = $v;
+            }
+            $phName = $showMeta->expression;
+        } else {
+            $phName = self::PARAM_PREFIX . count($params);
+            $escape = ['%'=>'\%', '_'=>'\_', '\\'=>'\\\\'];
+            $params[$phName] = '%' . strtr($showMeta, $escape) . '%';
+        }
+        $sql .= " LIKE {$phName}";
+        return $sql;
+    }
+
 
     /**
      * Composes column value for SQL, taking in account the column type.

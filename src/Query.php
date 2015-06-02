@@ -97,8 +97,17 @@ class Query extends \rock\db\Query
      *     ],
      * ]
      * ```
+     *
+     * You need to use {@see \rock\sphinx\Query::search()} method in order to fetch facet results.
      */
     public $facets = [];
+    /**
+     * @var boolean|string|Expression whether to automatically perform 'SHOW META' query against main one.
+     * You may set this value to be string or {@see \rock\db\Expression} instance, in this case its value will be used
+     * as 'LIKE' condition for 'SHOW META' statement.
+     * You need to use {@see \rock\sphinx\Query::search()} method in order to fetch 'meta' results.
+     */
+    public $showMeta;
 
     /**
      * @var Connection|string
@@ -155,29 +164,53 @@ class Query extends \rock\db\Query
     /**
      * Executes the query and returns the complete search result including e.g. hits, facets.
      * @param ConnectionInterface $connection the Sphinx connection used to generate the SQL statement.
-     * @param bool $subattributes
      * @return array the query results.
      */
-    public function search(ConnectionInterface $connection = null, $subattributes = false)
+    public function search(ConnectionInterface $connection = null)
     {
-        if (empty($this->facets)) {
-            $rows = $this->all($connection, $subattributes);
-            $facets = [];
-        } else {
-            $command = $this->createCommand($connection);
-            $dataReader = $command->query();
-            $rows = $dataReader->readAll();
-            $rawFacets = [];
-            while ($dataReader->nextResult()) {
-                $rawFacets[] = $dataReader->readAll();
+        $command = $this->createCommand($connection);
+        $dataReader = $command->query();
+        $rows = $this->prepareResult($dataReader->readAll());
+        $facets = [];
+        if (!empty($this->facets)) {
+            foreach ($this->facets as $facetKey => $facetValue) {
+                $dataReader->nextResult();
+                $rawFacetResults = $dataReader->readAll();
+                if (is_numeric($facetKey)) {
+                    $facet = [
+                        'name' => $facetValue,
+                        'value' => $facetValue,
+                        'count' => 'count(*)',
+                    ];
+                } else {
+                    $facet = array_merge(
+                        [
+                            'name' => $facetKey,
+                            'value' => $facetKey,
+                            'count' => 'count(*)',
+                        ],
+                        $facetValue
+                    );
+                }
+                foreach ($rawFacetResults as $rawFacetResult) {
+                    $rawFacetResult['value'] = $rawFacetResult[$facet['value']];
+                    $rawFacetResult['count'] = $rawFacetResult[$facet['count']];
+                    $facets[$facet['name']][] = $rawFacetResult;
+                }
             }
-            $facets = $this->normalizeFacetResults($rawFacets);
-            $rows = $this->prepareResult($rows, $connection);
         }
-
+        $meta = [];
+        if (!empty($this->showMeta)) {
+            $dataReader->nextResult();
+            $rawMetaResults = $dataReader->readAll();
+            foreach ($rawMetaResults as $rawMetaResult) {
+                $meta[$rawMetaResult['Variable_name']] = $rawMetaResult['Value'];
+            }
+        }
         return [
             'hits' => $rows,
             'facets' => $facets,
+            'meta' => $meta,
         ];
     }
 
@@ -348,40 +381,16 @@ class Query extends \rock\db\Query
         return $this;
     }
 
-
     /**
-     * Normalizes [[facets]] value from given raw facet results
-     * @param array $rawFacets raw facet results.
-     * @return array normalized facet results.
+     * Sets whether to automatically perform 'SHOW META' for the search query.
+     * @param boolean|string|Expression $showMeta whether to automatically perform 'SHOW META'
+     * @return static the query object itself
+     * @see showMeta
      */
-    private function normalizeFacetResults(array $rawFacets)
+    public function showMeta($showMeta)
     {
-        $facetResults = [];
-        foreach ($this->facets as $key => $value) {
-            if (is_numeric($key)) {
-                $facet = [
-                    'name' => $value,
-                    'value' => $value,
-                    'count' => 'count(*)',
-                ];
-            } else {
-                $facet = array_merge(
-                    [
-                        'name' => $key,
-                        'value' => $key,
-                        'count' => 'count(*)',
-                    ],
-                    $value
-                );
-            }
-            $rawFacetResults = array_shift($rawFacets);
-            foreach ($rawFacetResults as $rawFacetResult) {
-                $rawFacetResult['value'] = $rawFacetResult[$facet['value']];
-                $rawFacetResult['count'] = $rawFacetResult[$facet['count']];
-                $facetResults[$facet['name']][] = $rawFacetResult;
-            }
-        }
-        return $facetResults;
+        $this->showMeta = $showMeta;
+        return $this;
     }
 
     /**
