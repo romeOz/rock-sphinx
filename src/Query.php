@@ -163,13 +163,13 @@ class Query extends \rock\db\Query
             $rows = $this->all($connection);
             $facets = [];
         } else {
-                $command = $this->createCommand($connection);
-                $dataReader = $command->query();
-                $rows = $dataReader->readAll();
-                $rawFacets = [];
-                while ($dataReader->nextResult()) {
-                        $rawFacets[] = $dataReader->readAll();
-                    }
+            $command = $this->createCommand($connection);
+            $dataReader = $command->query();
+            $rows = $dataReader->readAll();
+            $rawFacets = [];
+            while ($dataReader->nextResult()) {
+                $rawFacets[] = $dataReader->readAll();
+            }
             $facets = $this->normalizeFacetResults($rawFacets);
             $rows = $this->prepareResult($rows, $connection);
         }
