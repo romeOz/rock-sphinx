@@ -99,6 +99,7 @@ class QueryBuilder implements ObjectInterface
             $this->buildOrderBy($query->orderBy),
             $this->buildLimit($query->limit, $query->offset),
             $this->buildOption($query->options, $params),
+            $this->buildFacets($query->facets, $params),
         ];
 
         return [implode($this->separator, array_filter($clauses)), $params];
@@ -426,22 +427,28 @@ class QueryBuilder implements ObjectInterface
      */
     public function buildSelect(array $columns, array &$params, $distinct = false, $selectOption = null)
     {
+
         $select = $distinct ? 'SELECT DISTINCT' : 'SELECT';
         if ($selectOption !== null) {
             $select .= ' ' . $selectOption;
         }
+        return $select . ' ' . $this->buildSelectFields($columns, $params);
+    }
 
+    /**
+     * @param array $columns
+     * @param array $params
+     * @return string fields list for SELECT clause
+     */
+    private function buildSelectFields(array $columns, array &$params)
+    {
         if (empty($columns)) {
-            return $select . ' *';
+            return '*';
         }
-
         foreach ($columns as $i => $column) {
             if ($column instanceof Expression) {
                 $columns[$i] = $column->expression;
                 $params = array_merge($params, $column->params);
-            } elseif ($column instanceof Query) {
-                list($sql, $params) = $this->build($column, $params);
-                $columns[$i] = "($sql) AS " . $this->connection->quoteColumnName($i);
             } elseif (is_string($i)) {
                 if (strpos($column, '(') === false) {
                     $column = $this->connection->quoteColumnName($column);
@@ -455,8 +462,7 @@ class QueryBuilder implements ObjectInterface
                 }
             }
         }
-
-        return $select . ' ' . implode(', ', $columns);
+        return implode(', ', $columns);
     }
 
     /**
@@ -597,10 +603,9 @@ class QueryBuilder implements ObjectInterface
             if ($direction instanceof Expression) {
                 $orders[] = $direction->expression;
             } else {
-                $orders[] = $this->connection->quoteColumnName($name) . ($direction === SORT_DESC ? ' DESC' : 'ASC');
+                $orders[] = $this->connection->quoteColumnName($name) . ($direction === SORT_DESC ? ' DESC' : ' ASC');
             }
         }
-
         return 'ORDER BY ' . implode(', ', $orders);
     }
 
@@ -1066,6 +1071,49 @@ class QueryBuilder implements ObjectInterface
         }
 
         return 'OPTION ' . implode(', ', $optionLines);
+    }
+
+    /**
+     * @param array $facets
+     * @param array $params
+     * @return string
+     * @throws SphinxException
+     */
+    protected function buildFacets(array $facets, array &$params)
+    {
+        if (empty($facets)) {
+            return '';
+        }
+        $sqlParts = [];
+        foreach ($facets as $key => $value) {
+            if (is_numeric($key)) {
+                $facet = [
+                    'select' => $value
+                ];
+            } else {
+                if (is_array($value)) {
+                    $facet = $value;
+                    if (!array_key_exists('select', $facet)) {
+                        $facet['select'] = $key;
+                    }
+                } else {
+                    throw new SphinxException('Facet specification must be an array, "' . gettype($value) . '" given.');
+                }
+            }
+            if (!array_key_exists('limit', $facet)) {
+                $facet['limit'] = null;
+            }
+            if (!array_key_exists('offset', $facet)) {
+                $facet['offset'] = null;
+            }
+            $facetSql = 'FACET ' . $this->buildSelectFields((array)$facet['select'], $params);
+            if (!empty($facet['order'])) {
+                $facetSql .= ' ' . $this->buildOrderBy($facet['order']);
+            }
+            $facetSql .= ' ' . $this->buildLimit($facet['limit'], $facet['offset']);
+            $sqlParts[] = $facetSql;
+        }
+        return implode($this->separator, $sqlParts);
     }
 
     /**

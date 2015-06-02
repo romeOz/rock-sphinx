@@ -81,6 +81,24 @@ class Query extends \rock\db\Query
      * @var array query options for the call snippet.
      */
     public $snippetOptions = [];
+    /**
+     * @var array facet search specifications.
+     * For example:
+     *
+     * ```php
+     * [
+     *     'group_id',
+     *     'brand_id' => [
+     *         'order' => ['COUNT(*)' => SORT_ASC],
+     *     ],
+     *     'price' => [
+     *         'select' => 'INTERVAL(price,200,400,600,800) AS price_seg',
+     *         'order' => ['FACET()' => SORT_ASC],
+     *     ],
+     * ]
+     * ```
+     */
+    public $facets = [];
 
     /**
      * @var Connection|string
@@ -132,6 +150,34 @@ class Query extends \rock\db\Query
         }
 
         return $row;
+    }
+
+    /**
+     * Executes the query and returns the complete search result including e.g. hits, facets.
+     * @param Connection $db the Sphinx connection used to generate the SQL statement.
+     * @return array the query results.
+     */
+    public function search($db = null)
+    {
+        if (empty($this->facets)) {
+            $rows = $this->all($db);
+            $facets = [];
+        } else {
+                $command = $this->createCommand($db);
+                $dataReader = $command->query();
+                $rows = $dataReader->readAll();
+                $rawFacets = [];
+                while ($dataReader->nextResult()) {
+                        $rawFacets[] = $dataReader->readAll();
+                    }
+            $facets = $this->normalizeFacetResults($rawFacets);
+            $rows = $this->populate($rows);
+        }
+
+        return [
+            'hits' => $rows,
+            'facets' => $facets,
+        ];
     }
 
     /**
@@ -273,6 +319,68 @@ class Query extends \rock\db\Query
         $this->snippetOptions = $options;
 
         return $this;
+    }
+
+    /**
+     * Sets FACET part of the query.
+     * @param array $facets facet specifications.
+     * @return static the query object itself
+     */
+    public function facets($facets)
+    {
+        $this->facets = $facets;
+        return $this;
+    }
+
+    /**
+     * Adds additional FACET part of the query.
+     * @param array $facets facet specifications.
+     * @return static the query object itself
+     */
+    public function addFacets($facets)
+    {
+        if (is_array($this->facets)) {
+            $this->facets = array_merge($this->facets, $facets);
+        } else {
+                $this->facets = $facets;
+            }
+        return $this;
+    }
+
+
+    /**
+     * Normalizes [[facets]] value from given raw facet results
+     * @param array $rawFacets raw facet results.
+     * @return array normalized facet results.
+     */
+    private function normalizeFacetResults(array $rawFacets)
+    {
+        $facetResults = [];
+        foreach ($this->facets as $key => $value) {
+            if (is_numeric($key)) {
+                $facet = [
+                    'name' => $value,
+                    'value' => $value,
+                    'count' => 'count(*)',
+                ];
+            } else {
+                $facet = array_merge(
+                    [
+                        'name' => $key,
+                        'value' => $key,
+                        'count' => 'count(*)',
+                    ],
+                    $value
+                );
+            }
+            $rawFacetResults = array_shift($rawFacets);
+            foreach ($rawFacetResults as $rawFacetResult) {
+                $rawFacetResult['value'] = $rawFacetResult[$facet['value']];
+                $rawFacetResult['count'] = $rawFacetResult[$facet['count']];
+                $facetResults[$facet['name']][] = $rawFacetResult;
+            }
+        }
+        return $facetResults;
     }
 
     /**
