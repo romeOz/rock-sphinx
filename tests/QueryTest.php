@@ -384,7 +384,7 @@ class QueryTest extends SphinxTestCase
     {
         $connection = $this->getConnection();
         $query = new Query();
-        $results = $query->from('yii2_test_article_index')
+        $results = $query->from('article_index')
             ->match('about')
             ->facets([
                 'author_id'
@@ -393,7 +393,7 @@ class QueryTest extends SphinxTestCase
         $this->assertNotEmpty($results['hits'], 'Unable to query with facet');
         $this->assertNotEmpty($results['facets']['author_id'], 'Unable to fill up facet');
         $query = new Query();
-        $results = $query->from('yii2_test_article_index')
+        $results = $query->from('article_index')
             ->match('about')
             ->facets([
                 'author_id' => [
