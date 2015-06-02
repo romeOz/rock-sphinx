@@ -134,13 +134,6 @@ class Query extends \rock\db\Query
         $command->entities = $entities;
         return $command;
     }
-    /**
-     * @inheritdoc
-     */
-    public function prepareResult($rows, ConnectionInterface $connection = null)
-    {
-        return parent::prepareResult($this->fillUpSnippets($rows), $connection);
-    }
 
     /**
      * Executes the query and returns a single row of result.
@@ -153,12 +146,7 @@ class Query extends \rock\db\Query
      */
     public function one(ConnectionInterface $connection = null, $subattributes = false)
     {
-        $row = parent::one($connection, $subattributes);
-        if ($row !== null) {
-            list ($row) = $this->fillUpSnippets([$row]);
-        }
-
-        return $row;
+        return parent::one($connection, $subattributes);
     }
 
     /**
@@ -212,6 +200,14 @@ class Query extends \rock\db\Query
             'facets' => $facets,
             'meta' => $meta,
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function prepareResult(array $rows, ConnectionInterface $connection = null)
+    {
+        return parent::prepareResult($this->fillUpSnippets($rows), $connection);
     }
 
     /**

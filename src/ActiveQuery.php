@@ -153,6 +153,21 @@ class ActiveQuery extends Query implements ActiveQueryInterface
     }
 
     /**
+     * Executes query and returns a single row of result.
+     *
+     * @param ConnectionInterface $connection the DB connection used to create the DB command.
+     * If null, the DB connection returned by {@see \rock\db\ActiveQueryTrait::$modelClass} will be used.
+     * @param boolean       $subattributes
+     * @return ActiveRecord|array|null a single row of query result. Depending on the setting of {@see \rock\db\ActiveQueryTrait::$asArray},
+     * the query result may be either an array or an ActiveRecord object. Null will be returned
+     * if the query results in nothing.
+     */
+    public function one(ConnectionInterface $connection = null, $subattributes = false)
+    {
+        return parent::one($connection, $subattributes);
+    }
+
+    /**
      * Executes query and returns all results as an array.
      *
      * @param ConnectionInterface $connection the DB connection used to create the DB command.
@@ -166,30 +181,9 @@ class ActiveQuery extends Query implements ActiveQueryInterface
     }
 
     /**
-     * Executes query and returns a single row of result.
-     *
-     * @param ConnectionInterface $connection the DB connection used to create the DB command.
-     * If null, the DB connection returned by {@see \rock\db\ActiveQueryTrait::$modelClass} will be used.
-     * @param boolean       $subattributes
-     * @return ActiveRecord|array|null a single row of query result. Depending on the setting of {@see \rock\db\ActiveQueryTrait::$asArray},
-     * the query result may be either an array or an ActiveRecord object. Null will be returned
-     * if the query results in nothing.
-     */
-    public function one(ConnectionInterface $connection = null, $subattributes = false)
-    {
-        $row = parent::one($connection, $subattributes);
-        if ($row !== null) {
-            $models = $this->prepareResult([$row], $connection);
-            return reset($models) ?: null;
-        } else {
-            return null;
-        }
-    }
-
-    /**
      * @inheritdoc
      */
-    public function prepareResult($rows, ConnectionInterface $connection = null)
+    public function prepareResult(array $rows, ConnectionInterface $connection = null)
     {
         if (empty($rows)) {
             return [];
@@ -207,11 +201,10 @@ class ActiveQuery extends Query implements ActiveQueryInterface
                 $model->afterFind();
             }
         } else {
-            /** @var ActiveRecord $class */
-            $class = $this->modelClass;
-            /** @var ActiveRecord $activeRecord */
-            $activeRecord = $class::instantiate([]);
-            $activeRecord->afterFind($models);
+            // event after
+            /** @var ActiveRecord $selfModel */
+            $selfModel = new $this->modelClass;
+            $selfModel->afterFind($models);
         }
         return $models;
     }
