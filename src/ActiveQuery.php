@@ -162,12 +162,6 @@ class ActiveQuery extends Query implements ActiveQueryInterface
      */
     public function all(ConnectionInterface $connection = null, $subAttributes = false)
     {
-        // before
-        /** @var ActiveRecord $model */
-        $model = new $this->modelClass;
-        if (!$model->beforeFind()) {
-            return [];
-        }
         return parent::all($connection, $subAttributes);
     }
 
@@ -183,18 +177,7 @@ class ActiveQuery extends Query implements ActiveQueryInterface
      */
     public function one(ConnectionInterface $connection = null, $subattributes = false)
     {
-        /** @var ActiveRecord $model */
-        $model  = new $this->modelClass;
-        if (!$model->beforeFind()) {
-            return null;
-        }
-        $row = parent::one($connection, $subattributes);
-        if ($row !== false) {
-            $models = $this->prepareResult([$row], $connection);
-            return reset($models) ?: null;
-        } else {
-            return null;
-        }
+        return parent::one($connection, $subattributes);
     }
 
     /**
