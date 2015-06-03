@@ -160,31 +160,29 @@ class Query extends \rock\db\Query
         $dataReader = $command->query();
         $rows = $this->prepareResult($dataReader->readAll());
         $facets = [];
-        if (!empty($this->facets)) {
-            foreach ($this->facets as $facetKey => $facetValue) {
-                $dataReader->nextResult();
-                $rawFacetResults = $dataReader->readAll();
-                if (is_numeric($facetKey)) {
-                    $facet = [
-                        'name' => $facetValue,
-                        'value' => $facetValue,
+        foreach ($this->facets as $facetKey => $facetValue) {
+            $dataReader->nextResult();
+            $rawFacetResults = $dataReader->readAll();
+            if (is_numeric($facetKey)) {
+                $facet = [
+                    'name' => $facetValue,
+                    'value' => $facetValue,
+                    'count' => 'count(*)',
+                ];
+            } else {
+                $facet = array_merge(
+                    [
+                        'name' => $facetKey,
+                        'value' => $facetKey,
                         'count' => 'count(*)',
-                    ];
-                } else {
-                    $facet = array_merge(
-                        [
-                            'name' => $facetKey,
-                            'value' => $facetKey,
-                            'count' => 'count(*)',
-                        ],
-                        $facetValue
-                    );
-                }
-                foreach ($rawFacetResults as $rawFacetResult) {
-                    $rawFacetResult['value'] = $rawFacetResult[$facet['value']];
-                    $rawFacetResult['count'] = $rawFacetResult[$facet['count']];
-                    $facets[$facet['name']][] = $rawFacetResult;
-                }
+                    ],
+                    $facetValue
+                );
+            }
+            foreach ($rawFacetResults as $rawFacetResult) {
+                $rawFacetResult['value'] = $rawFacetResult[$facet['value']];
+                $rawFacetResult['count'] = $rawFacetResult[$facet['count']];
+                $facets[$facet['name']][] = $rawFacetResult;
             }
         }
         $meta = [];
