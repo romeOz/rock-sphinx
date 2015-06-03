@@ -137,8 +137,8 @@ class ActiveDataProvider extends \rock\db\common\ActiveDataProvider
         if (($pagination = $this->getPagination()) !== false) {
             if (empty($query->showMeta)) {
                 $pagination->totalCount = $this->getTotalCount();
-                $limit = $pagination->limit;
-                $offset = $pagination->offset;
+                $limit = $pagination->getLimit();
+                $offset = $pagination->getOffset();
                 // pagination may exceed 'max_matches' boundary producing query error
                 if (!isset($query->options['max_matches'])) {
                     $query->options['max_matches'] = $offset + $limit;
