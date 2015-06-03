@@ -2,81 +2,76 @@
 
 namespace rock\sphinx;
 
+use rock\helpers\Instance;
 
-use rock\db\common\ActiveRecordInterface;
-use rock\helpers\ArrayHelper;
-use rock\helpers\Helper;
 
 /**
- * ActiveDataProvider implements a data provider based on {@see \rock\sphinx\Query} and {@see \rock\sphinx\ActiveQuery}.
- * ActiveDataProvider provides data by performing DB queries using {@see \rock\db\common\ActiveDataProvider::$query }.
- * And the following example shows how to use ActiveDataProvider without ActiveRecord:
+ * ActiveDataProvider is an enhanced version of {@see \rock\db\common\ActiveDataProvider} specific to the Sphinx.
+ * It allows to fetch not only rows and total rows count, but also a meta information and facet results.
+ *
+ * The following is an example of using ActiveDataProvider to provide facet results:
  *
  * ```php
- * $config = [
- *      'query' => (new \rock\db\Query())->from('post'),
- *      'model' => PostIndex::className(),
- *      'callSnippets' => [
- *          'content' => [
- *              'about', // query search
- *              [
- *                  'limit' => 1000,
- *                  'before_match' => '<span>',
- *                  'after_match' => '</span>'
- *              ]
- *          ],
- *      ],
- *      'pagination' => ['limit' => 2, 'sort' => SORT_DESC]
- * ];
- * $provider = new \rock\sphinx\ActiveDataProvider($config);
- * $provider->get(); // returns the items in the current page
- * $provider->getPagination(); // return ActiveDataPagination
- * ```
- *
- * The following is an example of using ActiveDataProvider to provide ActiveRecord instances:
- *
- * ```php
- * $provider = new \rock\sphinx\ActiveDataProvider([
- *     'query' => ArticleIndex::find()->match('about')->with('sourceCompositeLink'),
- *     'with' => 'sourceCompositeLink'
- *     'callSnippets' => [
- *          'content' => [
- *              'about', // query search
- *              [
- *                  'limit' => 1000,
- *                  'before_match' => '<span>',
- *                  'after_match' => '</span>'
- *              ]
- *          ],
- *          'title' => [
- *              'about',
- *              [
- *                  'limit' => 1000,
- *                  'before_match' => '<span>',
- *                  'after_match' => '</span>'
- *              ]
- *          ],
+ * $provider = new ActiveDataProvider([
+ *     'query' => Post::find()->facets(['author_id', 'category_id']),
+ *     'pagination' => [
+ *         'pageSize' => 20,
  *     ],
- *     'pagination' => ['limit' => 2, 'sort' => SORT_DESC]
  * ]);
  *
- * $provider->get(); // returns the items in the current page
- * $provider->getPagination(); // return ActiveDataPagination
+ * // get the posts in the current page
+ * $posts = $provider->getModels();
+ *
+ * // get all facets
+ * $facets = $provider->getFacets();
+ *
+ * // get particular facet
+ * $authorFacet = $provider->getFacet('author_id');
+ * ```
+ *
+ * In case {@see \rock\sphinx\Query::$showMeta} is set ActiveDataProvider will fetch total count value from the query meta information,
+ * avoiding extra counting query:
+ *
+ * ```php
+ * $provider = new ActiveDataProvider([
+ *     'query' => Post::find()->showMeta(true),
+ *     'pagination' => [
+ *         'pageSize' => 20,
+ *     ],
+ * ]);
+ *
+ * $totalCount = $provider->getTotalCount(); // fetched from meta information
+ * ```
+ *
+ * Note: when using 'meta' information results total count will be fetched after pagination limit applying,
+ * which eliminates ability to verify if requested page number actually exist. 
+ *
+ * Note: because pagination offset and limit may exceed Sphinx 'max_matches' bounds, data provider will set 'max_matches'
+ * option automatically based on those values. However, if {@see \rock\sphinx\Query::$showMeta} is set, such adjustment is not performed
+ * as it will break total count calculation, so you'll have to deal with 'max_matches' bounds on your own.
+ *
+ * @property array $meta search query meta info in format: name => value.
+ * @property array $facets query facet results.
  */
 class ActiveDataProvider extends \rock\db\common\ActiveDataProvider
 {
-    public $callSnippets = [];
+    public function init()
+    {
+        parent::init();
+        if (is_string($this->connection)) {
+            $this->connection = Instance::ensure($this->connection, Connection::className());
+        }
+    }
 
-    /** @var  string|\rock\sphinx\ActiveRecord */
-    public $model;
-
-    /** @var  string */
-    public $with;
-
+    /**
+     * @var array search query meta info in format: name => value.
+     */
+    private $_meta;
     /**
      * @var array query facet results.
      */
     private $_facets;
+
     /**
      * @param array $facets query facet results.
      */
@@ -84,6 +79,7 @@ class ActiveDataProvider extends \rock\db\common\ActiveDataProvider
     {
         $this->_facets = $facets;
     }
+
     /**
      * @return array query facet results.
      */
@@ -93,6 +89,25 @@ class ActiveDataProvider extends \rock\db\common\ActiveDataProvider
             $this->prepareModels();
         }
         return $this->_facets;
+    }
+
+    /**
+     * @param array $meta search query meta info
+     */
+    public function setMeta($meta)
+    {
+        $this->_meta = $meta;
+    }
+
+    /**
+     * @return array search query meta info
+     */
+    public function getMeta()
+    {
+        if (!is_array($this->_meta)) {
+            $this->prepareModels();
+        }
+        return $this->_meta;
     }
 
     /**
@@ -110,109 +125,59 @@ class ActiveDataProvider extends \rock\db\common\ActiveDataProvider
         return $facets[$name];
     }
 
-    protected function prepareArray()
-    {
-        if (!$query = parent::prepareArray()) {
-            return [];
-        }
-
-        return $this->prepareResult($query);
-    }
-
+    /**
+     * @inheritdoc
+     */
     protected function prepareModels()
     {
-        if ($this->query instanceof ActiveQuery && !isset($this->with) && !empty($this->query->with)) {
-            $this->with = current($this->query->with);
+        if (!$this->query instanceof Query) {
+            throw new SphinxException('The "query" property must be an instance "' . Query::className() . '" or its subclasses.');
         }
-
-        if (!$this->totalCount = $this->calculateTotalCount()) {
-            return [];
-        }
-        $activePagination = $this->getPagination();
-
-        $this->query
-            ->limit($activePagination->limit)
-            ->offset($activePagination->offset);
-
-        if (empty($this->query->facets)) {
-            $this->setFacets([]);
-            $result = $this->fetchMode
-                ? $this->query->createCommand($this->connection)->queryAll($this->fetchMode, $this->subattributes)
-                : $this->query->all($this->connection, $this->subattributes);
-        } else {
-            $results = $this->query->search($this->connection);
-            $this->setFacets($results['facets']);
-            $result = $results['hits'];
-        }
-
-        if ($this->keys === null) {
-            $this->keys = $this->prepareKeys($result);
-        }
-
-        return $result ? $this->prepareResult($result) : [];
-    }
-
-    protected function prepareResult($query)
-    {
-        reset($query);
-        $firstElement = current($query);
-        if ($firstElement instanceof ActiveRecordInterface) {
-            if ($firstElement instanceof ActiveRecord) {
-                $className = $firstElement;
-                $this->model = $className::className();
-            }
-        }
-        if ($this->query instanceof ActiveQuery) {
-            $this->model = $this->query->modelClass;
-        }
-        if (!$this->model) {
-            $this->model = ActiveRecord::className();
-        }
-        foreach ($this->callSnippets as $field => $value) {
-            if (empty($value[0])) {
-                continue;
-            }
-            $value[1] = Helper::getValue($value[1],[]);
-            list($match, $options) = $value;
-
-            if (isset($this->with)) {
-                $query = $this->prepareAttributeWith($field, $match, $options, $query);
-                continue;
-            }
-
-            $query = $this->prepareAttribute($field, $match, $options, $query);
-        }
-
-        return $query;
-    }
-
-    protected function prepareAttribute($field, $match, $options, $query)
-    {
-        if ($data = ArrayHelper::getColumn($query, $field)) {
-            if ($data = array_combine(array_keys($data), call_user_func([$this->model, 'callSnippets'], $data, $match, $options))) {
-                foreach ($query as $id => $attributes) {
-                    if (isset($attributes[$field]) && isset($data[$id])) {
-                        $query[$id][$field] = $data[$id];
-                    }
+        $query = clone $this->query;
+        if (($pagination = $this->getPagination()) !== false) {
+            if (empty($query->showMeta)) {
+                $pagination->totalCount = $this->getTotalCount();
+                $limit = $pagination->limit;
+                $offset = $pagination->offset;
+                // pagination may exceed 'max_matches' boundary producing query error
+                if (!isset($query->options['max_matches'])) {
+                    $query->options['max_matches'] = $offset + $limit;
                 }
+                $query->limit($limit)->offset($offset);
+            } else {
+                // pagination fails to validate page number, if total count is unknown at this stage
+                $query->limit($pagination->limit)->offset($pagination->offset);
             }
         }
 
-        return $query;
+        $results = $query->search($this->connection);
+        $this->setMeta($results['meta']);
+        $this->setFacets($results['facets']);
+
+        if ($pagination !== false) {
+            $pagination->totalCount = $this->getTotalCount();
+        }
+
+        return $results['hits'];
     }
 
-    protected function prepareAttributeWith($field, $match, $options, $query)
+    /**
+     * @inheritdoc
+     */
+    protected function prepareTotalCount()
     {
-        if ($data = ArrayHelper::getColumn($query, function($element) use ($field){return $element[$this->with][$field];})) {
-            if ($data = array_combine(array_keys($data), call_user_func([$this->model, 'callSnippets'], $data, $match, $options))) {
-                foreach ($query as $id => $attributes) {
-                    $attributes = $attributes[$this->with];
-                    if (isset($attributes[$field]) && isset($data[$id])) {
-                        $query[$id][$this->with][$field] = $data[$id];
-                    }
-                }
+        if (!$this->query instanceof Query) {
+            throw new SphinxException('The "query" property must be an instance "' . Query::className() . '" or its subclasses.');
+        }
+
+        if (!empty($this->query->showMeta)) {
+            $meta = $this->getMeta();
+            if (isset($meta['total'])) {
+                return (int) $meta['total'];
             }
         }
-        return $query;
+
+        $query = clone $this->query;
+        return (int) $query->limit(-1)->offset(-1)->orderBy([])->facets([])->showMeta(false)->count('*', $this->connection);
     }
 }

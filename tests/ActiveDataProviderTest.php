@@ -2,12 +2,12 @@
 
 namespace rockunit;
 
+use rock\helpers\Trace;
 use rock\sphinx\ActiveDataProvider;
 use rock\sphinx\Query;
 use rockunit\models\ActiveRecord;
-use rockunit\models\ArticleDb;
 use rockunit\models\ArticleIndex;
-
+use rockunit\db\models\ActiveRecord as ActiveRecordDb;
 /**
  * @group search
  * @group sphinx
@@ -19,141 +19,111 @@ class ActiveDataProviderTest extends SphinxTestCase
     {
         parent::setUp();
         ActiveRecord::$connection = $this->getConnection(false);
+        ActiveRecordDb::$connection = $this->getDbConnection();
+        unset($_GET['page']);
+    }
+
+    public static function tearDownAfterClass()
+    {
+        parent::tearDownAfterClass();
+        unset($_GET['page']);
     }
 
 
-    protected $optionsSnippet = [
-        'limit' => 1000,
-        'before_match' => '<span>',
-        'after_match' => '</span>'
-    ];
-
-    public function testQuery()
+    /**
+     * @dataProvider providerQuery
+     * @param int $page
+     * @param int $id
+     */
+    public function testQuery($page, $id)
     {
-        $config = [
-            'connection' => $this->getDbConnection(false),
-            'query' => (new \rock\db\Query())->from('sphinx_article'),
-            'model' => ArticleIndex::className(),
-            'callSnippets' => [
-                'content' =>
-                    [
-                        'about',
-                        $this->optionsSnippet
-                    ],
-
-            ],
+        $_GET['page'] = $page;
+        $provider = new ActiveDataProvider([
+            'connection' => $this->getConnection(false),
+            'query' =>  (new Query())->from('article_index'),
             'pagination' => ['limit' => 1, 'sort' => SORT_DESC]
+        ]);
+
+        $this->assertSame(1, $provider->getCount());
+        $this->assertSame(2, $provider->getTotalCount());
+        $this->assertSame(2, $provider->getPagination()->getTotalCount());
+        $this->assertSame($page, $provider->getPagination()->getPageCurrent());
+        $this->assertNotEmpty($provider->getPagination()->toArray());
+        $this->assertSame($id, $provider->getModels()[0]['id']);
+    }
+
+    public function providerQuery()
+    {
+        return [
+            [1, 2],
+            [2, 1]
         ];
-        $provider = (new ActiveDataProvider($config));
-        $this->assertSame(
-            $provider->get()[0]['content'],
-            'This article is <span>about</span> cats'
-        );
-        $this->assertSame(count($provider->get()), 1);
-        $this->assertNotEmpty($provider->getPagination()->toArray());
-        $this->assertSame($provider->getTotalCount(), 2);
     }
 
-    public function testActiveQuery()
+    /**
+     * @dataProvider providerActiveQuery
+     * @param int $page
+     * @param string $content
+     */
+    public function testActiveQuery($page, $content)
     {
-        ArticleDb::$connection = $this->getDbConnection(false);
-        $provider = new ActiveDataProvider([
-            'query' => ArticleDb::find()->orderBy('id ASC')->asArray(),
-            'model' => ArticleIndex::className(),
-            'callSnippets' => [
-               'content' =>
-                   [
-                       'about',
-                       $this->optionsSnippet
-                   ],
+        $_GET['page'] = $page;
+        $snippetCallback = function ($rows){
+            $result = [];
+            foreach ($rows as $row) {
+                $row = $row['source'];
+                $result[] = ['source.title' => $row['title'], 'source.content' => $row['content']];
+            }
+            return $result;
+        };
+        $snippetOptions = [
+            //'limit' => 1000,
+            'before_match' => '<span>',
+            'after_match' => '</span>'
+        ];
 
-            ],
+        $provider = new ActiveDataProvider([
+            'query' => ArticleIndex::find()
+                ->snippetCallback($snippetCallback)
+                ->snippetOptions($snippetOptions)
+                ->with('source')
+                ->match('article')
+                ->asArray(),
+
             'pagination' => ['limit' => 1, 'sort' => SORT_DESC]
         ]);
-        $this->assertSame(
-            $provider->get()[0]['content'],
-            'This article is <span>about</span> cats'
-        );
-        $this->assertSame(count($provider->get()), 1);
+        $this->assertSame(1, $provider->getCount());
+        $this->assertSame(2, $provider->getTotalCount());
+        $this->assertEquals($content, $provider->getModels()[0]['source']['content']);
+        $this->assertSame(2, $provider->getPagination()->getTotalCount());
+        $this->assertSame($page, $provider->getPagination()->getPageCurrent());
         $this->assertNotEmpty($provider->getPagination()->toArray());
-        $this->assertSame($provider->getTotalCount(), 2);
+
+        // as models
 
         $provider = new ActiveDataProvider([
-           'query' => ArticleDb::find()->orderBy('id ASC')->indexBy('id'),
-           'model' => ArticleIndex::className(),
-           'callSnippets' => [
-               'content' =>
-                   [
-                       'about',
-                       $this->optionsSnippet
-                   ],
+            'query' => ArticleIndex::find()
+                ->snippetCallback($snippetCallback)
+                ->snippetOptions($snippetOptions)
+                ->with('source')
+                ->match('article'),
 
-           ],
-           'pagination' => ['limit' => 1, 'sort' => SORT_DESC]
+            'pagination' => ['limit' => 1, 'sort' => SORT_DESC]
         ]);
-
-        $this->assertSame(
-            $provider->get()[1]['content'],
-            'This article is <span>about</span> cats'
-        );
-        $this->assertSame(count($provider->get()), 1);
+        $this->assertSame(1, $provider->getCount());
+        $this->assertSame(2, $provider->getTotalCount());
+        $this->assertEquals($content, $provider->getModels()[0]['snippet']['source.content']);
+        $this->assertSame(2, $provider->getPagination()->getTotalCount());
+        $this->assertSame($page, $provider->getPagination()->getPageCurrent());
         $this->assertNotEmpty($provider->getPagination()->toArray());
-        $this->assertSame($provider->getTotalCount(), 2);
-
-        $provider = new ActiveDataProvider([
-           'query' => ArticleIndex::find()->match('about')->with('sourceCompositeLink')->indexBy('id'),
-           //'model' => ArticleIndex::className(),
-           //'with' => 'sourceCompositeLink',
-           'callSnippets' => [
-               'content' =>
-                   [
-                       'about',
-                       $this->optionsSnippet
-                   ],
-
-           ],
-           'pagination' => ['limit' => 1, 'sort' => SORT_DESC]
-        ]);
-
-        $this->assertSame(
-            $provider->get()[1]['sourceCompositeLink']['content'],
-            'This article is <span>about</span> cats'
-        );
-
-        $this->assertSame(count($provider->get()), 1);
-        $this->assertNotEmpty($provider->getPagination()->toArray());
-        $this->assertSame($provider->getTotalCount(), 2);
     }
 
-    public function testArray()
+    public function providerActiveQuery()
     {
-        ArticleDb::$connection = $this->getDbConnection(false);
-        $array = ArticleIndex::find()->match('about')->with('sourceCompositeLink')->indexBy('id')->asArray()->all();
-        $provider = new ActiveDataProvider([
-           'array' => $array,
-           'model' => ArticleIndex::className(),
-           'with' => 'sourceCompositeLink',
-           'only' => ['sourceCompositeLink'],
-           'callSnippets' => [
-               'content' =>
-                   [
-                       'about',
-                       $this->optionsSnippet
-                   ],
-
-           ],
-           'pagination' => ['limit' => 1, 'sort' => SORT_DESC]
-        ]);
-
-        $this->assertSame(
-            $provider->get()[1]['sourceCompositeLink']['content'],
-            'This article is <span>about</span> cats'
-        );
-
-        $this->assertSame(count($provider->get()), 1);
-        $this->assertNotEmpty($provider->getPagination()->toArray());
-        $this->assertSame($provider->getTotalCount(), 2);
-        $this->assertSame(count(current($provider->toArray())),1);
+        return [
+            [1, 'This <span>article</span> is about dogs'],
+            //[2, 'This <span>article</span> is about cats']
+        ];
     }
 
     /**
@@ -170,8 +140,28 @@ class ActiveDataProviderTest extends SphinxTestCase
             'query' => $query,
             'connection' => $this->getConnection(),
         ]);
-        $models = $provider->get();
+        $models = $provider->getModels();
         $this->assertEquals(2, count($models));
         $this->assertEquals(2, count($provider->getFacet('author_id')));
+    }
+
+    /**
+     * @depends testQuery
+     */
+    public function testTotalCountFromMeta()
+    {
+        $query = new Query();
+        $query->from('article_index');
+        $query->showMeta(true);
+        $provider = new ActiveDataProvider([
+            'query' => $query,
+            'connection' => $this->getConnection(),
+            'pagination' => [
+                'limit' => 1
+            ]
+        ]);
+        $models = $provider->getModels();
+        $this->assertEquals(1, count($models));
+        $this->assertEquals(2, $provider->getTotalCount());
     }
 }
