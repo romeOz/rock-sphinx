@@ -3,6 +3,7 @@
  */
 
 DROP TABLE IF EXISTS sphinx_article;
+DROP TABLE IF EXISTS sphinx_item;
 DROP TABLE IF EXISTS sphinx_category;
 DROP TABLE IF EXISTS sphinx_tag;
 DROP TABLE IF EXISTS sphinx_article_tag;
@@ -16,6 +17,15 @@ CREATE TABLE IF NOT EXISTS `sphinx_article` (
   `create_date` TIMESTAMP NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `sphinx_item` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `description` text NOT NULL,
+  `category_id` int(11) NOT NULL,
+  `price` float NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=3;
 
 CREATE TABLE IF NOT EXISTS `sphinx_category` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -39,6 +49,10 @@ CREATE TABLE IF NOT EXISTS `sphinx_article_tag` (
 INSERT INTO `sphinx_article` (`id`, `title`, `content`, `category_id`, `author_id`, `create_date`) VALUES
 (1, 'About cats', 'This article is about cats', 1, 1, FROM_UNIXTIME(UNIX_TIMESTAMP('2012-11-23 00:00:00'))),
 (2, 'About dogs', 'This article is about dogs', 2, 2, FROM_UNIXTIME(UNIX_TIMESTAMP('2012-12-15 00:00:00')));
+
+INSERT INTO `sphinx_item` (`id`, `name`, `description`, `category_id`, `price`) VALUES
+(1, 'pencil', 'Simple pencil', 1, 2.5),
+(2, 'table', 'Wooden table', 2, 100);
 
 INSERT INTO `sphinx_category` (`id`, `title`, `price`) VALUES
 (1, 'Football', 2.5),
