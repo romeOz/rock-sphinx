@@ -146,7 +146,7 @@ class ActiveDataProvider extends \rock\db\common\ActiveDataProvider
                 $query->limit($limit)->offset($offset);
             } else {
                 // pagination fails to validate page number, if total count is unknown at this stage
-                $query->limit($pagination->limit)->offset($pagination->offset);
+                $query->limit($pagination->getLimit())->offset($pagination->getOffset());
             }
         }
 
@@ -155,6 +155,7 @@ class ActiveDataProvider extends \rock\db\common\ActiveDataProvider
         $this->setFacets($results['facets']);
 
         if ($pagination !== false) {
+
             $pagination->totalCount = $this->getTotalCount();
         }
 
@@ -172,6 +173,9 @@ class ActiveDataProvider extends \rock\db\common\ActiveDataProvider
 
         if (!empty($this->query->showMeta)) {
             $meta = $this->getMeta();
+            if (isset($meta['total_found'])) {
+                return (int) $meta['total_found'];
+            }
             if (isset($meta['total'])) {
                 return (int) $meta['total'];
             }
