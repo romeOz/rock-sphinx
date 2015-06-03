@@ -5,7 +5,6 @@
 /build/
 vendor/
 composer.lock
-/provisioning/
 assets/*
 views/*
 *~
@@ -26,7 +25,8 @@ Desktop.ini
 ## Vagrant
 ############
 .vagrant/
-
+provisioning/
+Vagrantfile
 
 ############
 ## PHPStorm
