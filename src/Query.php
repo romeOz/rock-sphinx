@@ -181,7 +181,7 @@ class Query extends \rock\db\Query
                 );
             }
             foreach ($rawFacetResults as $rawFacetResult) {
-                $rawFacetResult['value'] = $rawFacetResult[$facet['value']];
+                $rawFacetResult['value'] = $rawFacetResult[strtolower($facet['value'])];
                 $rawFacetResult['count'] = $rawFacetResult[$facet['count']];
                 $facets[$facet['name']][] = $rawFacetResult;
             }
