@@ -7,10 +7,10 @@ namespace rockunit\models;
  */
 class ActiveRecord extends \rock\sphinx\ActiveRecord
 {
-    public static $db;
+    public static $connection;
 
     public static function getConnection()
     {
-        return self::$db;
+        return self::$connection;
     }
 }

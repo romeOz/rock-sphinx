@@ -40,7 +40,7 @@ class ActiveRecordTest extends SphinxTestCase
     protected function setUp()
     {
         parent::setUp();
-        ActiveRecord::$db = $this->getConnection();
+        ActiveRecord::$connection = $this->getConnection();
         Trace::removeAll();
         unset($_POST['_method']);
         Event::offAll();
@@ -418,7 +418,7 @@ class ActiveRecordTest extends SphinxTestCase
 
         // beginCache and endCache
         $connection->enableQueryCache = false;
-        ActiveRecord::$db = $connection;
+        ActiveRecord::$connection = $connection;
         ArticleIndex::find()
             ->where(['id' => 1])
             ->with( ['category'=> function(ActiveQuery $query){$query->cache();}])
@@ -475,5 +475,59 @@ class ActiveRecordTest extends SphinxTestCase
         $result = ArticleIndex::find()->match('dogs');
         $this->assertTrue($result->one() instanceof ArticleIndex);
         $this->assertTrue($result->one() instanceof ArticleIndex);
+    }
+
+
+    public function testTypeCast()
+    {
+        $connection = ActiveRecord::$connection;
+
+        // enable type cast
+
+        $connection->typeCast = true;
+
+        // find one
+        $customer = ArticleIndex::find()->one($connection);
+        $this->assertInternalType('int', $customer->id);
+        $this->assertInternalType('int', $customer->category_id);
+        $this->assertInternalType('array', $customer->tag);
+        $customer = ArticleIndex::find()->asArray()->one($connection);
+        $this->assertInternalType('int', $customer['id']);
+        $this->assertInternalType('int', $customer['category_id']);
+        $this->assertInternalType('string', $customer['tag']);
+
+        // find all
+        $customer = ArticleIndex::find()->all($connection);
+        $this->assertInternalType('int', $customer[0]->id);
+        $this->assertInternalType('int', $customer[0]->category_id);
+        $this->assertInternalType('array', $customer[0]->tag);
+        $customer = ArticleIndex::find()->asArray()->all($connection);
+        $this->assertInternalType('int', $customer[0]['id']);
+        $this->assertInternalType('int', $customer[0]['category_id']);
+        $this->assertInternalType('string', $customer[0]['tag']);
+
+        // disable type cast
+
+        $connection->typeCast = false;
+
+        // find one
+        $customer = ArticleIndex::find()->one($connection);
+        $this->assertInternalType('string', $customer->id);
+        $this->assertInternalType('string', $customer->category_id);
+        $this->assertInternalType('string', $customer->tag);
+        $customer = ArticleIndex::find()->asArray()->one($connection);
+        $this->assertInternalType('string', $customer['id']);
+        $this->assertInternalType('string', $customer['category_id']);
+        $this->assertInternalType('string', $customer['tag']);
+
+        // find all
+        $customer = ArticleIndex::find()->all($connection);
+        $this->assertInternalType('string', $customer[0]->id);
+        $this->assertInternalType('string', $customer[0]->category_id);
+        $this->assertInternalType('string', $customer[0]->tag);
+        $customer = ArticleIndex::find()->asArray()->all($connection);
+        $this->assertInternalType('string', $customer[0]['id']);
+        $this->assertInternalType('string', $customer[0]['category_id']);
+        $this->assertInternalType('string', $customer[0]['tag']);
     }
 }

@@ -18,7 +18,7 @@ class ActiveDataProviderTest extends SphinxTestCase
     protected function setUp()
     {
         parent::setUp();
-        ActiveRecord::$db = $this->getConnection(false);
+        ActiveRecord::$connection = $this->getConnection(false);
     }
 
 

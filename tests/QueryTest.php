@@ -449,6 +449,43 @@ class QueryTest extends SphinxTestCase
         $this->assertNotEmpty($results['facets']['author_id'], 'Unable to fill up facet');
     }
 
+    public function testTypeCast()
+    {
+        $connection = $this->getConnection();
+
+        // enable type cast
+
+        $connection->typeCast = true;
+
+        // find one
+        $article = (new Query)->from('article_index')->one($connection);
+        $this->assertInternalType('int', $article['id']);
+        $this->assertInternalType('int', $article['category_id']);
+        $this->assertInternalType('string', $article['tag']);
+
+        // find all
+        $article = (new Query)->from('article_index')->all($connection);
+        $this->assertInternalType('int', $article[0]['id']);
+        $this->assertInternalType('int', $article[0]['category_id']);
+        $this->assertInternalType('string', $article[0]['tag']);
+
+        // disable type cast
+
+        $connection->typeCast = false;
+
+        // find one
+        $article = (new Query)->from('article_index')->one($connection);
+        $this->assertInternalType('string', $article['id']);
+        $this->assertInternalType('string', $article['category_id']);
+        $this->assertInternalType('string', $article['tag']);
+
+        // find all
+        $article = (new Query)->from('article_index')->all($connection);
+        $this->assertInternalType('string', $article[0]['id']);
+        $this->assertInternalType('string', $article[0]['category_id']);
+        $this->assertInternalType('string', $article[0]['tag']);
+    }
+
     public function testCache()
     {
         $connection = $this->getConnection();

@@ -17,7 +17,7 @@ class ActiveRelationTest extends SphinxTestCase
     protected function setUp()
     {
         parent::setUp();
-        ActiveRecord::$db = $this->getConnection();
+        ActiveRecord::$connection = $this->getConnection();
         ActiveRecordDb::$connection = $this->getDbConnection();
     }
 

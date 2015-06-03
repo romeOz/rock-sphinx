@@ -623,13 +623,15 @@ abstract class ActiveRecord extends BaseActiveRecord
     public static function populateRecord($record, $row, ConnectionInterface $connection = null)
     {
         $columns = static::getIndexSchema($connection)->columns;
-        foreach ($row as $name => $value) {
-            if (isset($columns[$name])) {
-                if ($columns[$name]->isMva) {
-                    $mvaValue = explode(',', $value);
-                    $row[$name] = array_map([$columns[$name], 'phpTypecast'], $mvaValue);
-                } else {
-                    $row[$name] = $columns[$name]->phpTypecast($value);
+        if ($connection->typeCast) {
+            foreach ($row as $name => $value) {
+                if (isset($columns[$name])) {
+                    if ($columns[$name]->isMva) {
+                        $mvaValue = explode(',', $value);
+                        $row[$name] = array_map([$columns[$name], 'phpTypecast'], $mvaValue);
+                    } else {
+                        $row[$name] = $columns[$name]->phpTypecast($value);
+                    }
                 }
             }
         }
