@@ -286,6 +286,25 @@ class QueryTest extends SphinxTestCase
 
     /**
      * @depends testRun
+     *
+     * @see https://github.com/yiisoft/yii2-sphinx/issues/9
+     */
+    public function testRunAndWhere()
+    {
+        $connection = $this->getConnection();
+
+        $query = new Query;
+        $rows = $query->from('article_index')
+            ->where([
+                'category_id' => 2,
+                'id' => 2,
+            ])
+            ->all($connection);
+        $this->assertCount(1, $rows);
+    }
+
+    /**
+     * @depends testRun
      */
     public function testWhereSpecialCharValue()
     {
