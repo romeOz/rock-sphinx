@@ -5,6 +5,7 @@ use rock\components\ModelEvent;
 use rock\db\common\AfterFindEvent;
 use rock\db\common\ConnectionInterface;
 use rock\db\Expression;
+use rock\helpers\ArrayHelper;
 
 /**
  * Query represents a SELECT SQL statement.
@@ -399,16 +400,50 @@ class Query extends \rock\db\Query
             return $rows;
         }
         $snippetSources = call_user_func($this->snippetCallback, $rows);
+
+        list($snippetSources, $fields) = $this->multiSnippets($snippetSources);
         $snippets = $this->callSnippets($snippetSources);
         $snippetKey = 0;
-        foreach ($rows as $key => $row) {
+        foreach ($rows as $key => &$row) {
+            if (isset($fields)) {
+                $result = [];
+                foreach ($fields as $field) {
+                    $result[$field] = $value = $snippets[$snippetKey];
+                    if (is_array($row)) {
+                        $callback = function() use ($value){
+                            return $value;
+                        };
+
+                        $row = ArrayHelper::updateValue($row, explode('.', $field), $callback, false);
+                    }
+                    ++$snippetKey;
+                }
+                $rows[$key]['snippet'] = $result;
+                continue;
+            }
             $rows[$key]['snippet'] = $snippets[$snippetKey];
-            $snippetKey++;
+
+            ++$snippetKey;
         }
 
         return $rows;
     }
 
+    protected function multiSnippets(array $snippetSources)
+    {
+        $source = current($snippetSources);
+        if (is_array($source)) {
+            $keys = array_keys($source);
+            $result = [];
+            foreach ($snippetSources as $source) {
+                if (is_array($source)) {
+                    $result = array_merge($result, array_values($source));
+                }
+            }
+            return [$result, $keys];
+        }
+        return [$snippetSources, null];
+    }
     /**
      * Builds a snippets from provided source data.
      *
