@@ -408,14 +408,8 @@ class Query extends \rock\db\Query
             if (isset($fields)) {
                 $result = [];
                 foreach ($fields as $field) {
-                    $result[$field] = $value = $snippets[$snippetKey];
-                    if (is_array($row)) {
-                        $callback = function() use ($value){
-                            return $value;
-                        };
-
-                        $row = ArrayHelper::updateValue($row, explode('.', $field), $callback, false);
-                    }
+                    $result[$field] = $snippets[$snippetKey];
+                    $row = $this->processing($row, explode('.', $field), $snippets[$snippetKey]);
                     ++$snippetKey;
                 }
                 $rows[$key]['snippet'] = $result;
@@ -427,6 +421,30 @@ class Query extends \rock\db\Query
         }
 
         return $rows;
+    }
+
+    protected function processing($row, array $fields, $value)
+    {
+        if (is_array($row)) {
+            $callback = function() use ($value){
+                return $value;
+            };
+
+            return ArrayHelper::updateValue($row, $fields, $callback, false);
+        }
+        $r = $row;
+        foreach ($fields as $field) {
+            if (!isset($r->$field)) {
+                break;
+            }
+            if (is_string($r->$field)) {
+                $r->$field = $value;
+                break;
+            }
+            $r = $r->$field;
+
+        }
+        return $row;
     }
 
     protected function multiSnippets(array $snippetSources)

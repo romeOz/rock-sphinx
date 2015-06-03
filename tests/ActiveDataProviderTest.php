@@ -2,7 +2,6 @@
 
 namespace rockunit;
 
-use rock\helpers\Trace;
 use rock\sphinx\ActiveDataProvider;
 use rock\sphinx\Query;
 use rockunit\models\ActiveRecord;
@@ -113,6 +112,7 @@ class ActiveDataProviderTest extends SphinxTestCase
         $this->assertSame(1, $provider->getCount());
         $this->assertSame(2, $provider->getTotalCount());
         $this->assertEquals($content, $provider->getModels()[0]['snippet']['source.content']);
+        $this->assertEquals($content, $provider->getModels()[0]['source']['content']);
         $this->assertSame(2, $provider->getPagination()->getTotalCount());
         $this->assertSame($page, $provider->getPagination()->getPageCurrent());
         $this->assertNotEmpty($provider->getPagination()->toArray());
