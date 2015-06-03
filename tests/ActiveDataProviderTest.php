@@ -122,7 +122,7 @@ class ActiveDataProviderTest extends SphinxTestCase
     {
         return [
             [1, 'This <span>article</span> is about dogs'],
-            //[2, 'This <span>article</span> is about cats']
+            [2, 'This <span>article</span> is about cats']
         ];
     }
 
