@@ -155,7 +155,6 @@ class ActiveDataProvider extends \rock\db\common\ActiveDataProvider
         $this->setFacets($results['facets']);
 
         if ($pagination !== false) {
-
             $pagination->totalCount = $this->getTotalCount();
         }
 

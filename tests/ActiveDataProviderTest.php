@@ -164,4 +164,34 @@ class ActiveDataProviderTest extends SphinxTestCase
         $this->assertEquals(1, count($models));
         $this->assertEquals(2, $provider->getTotalCount());
     }
+
+    /**
+     * @dataProvider providerAutoAdjustMaxMatches
+     * @param int $page
+     * @param int $id
+     */
+    public function testAutoAdjustMaxMinMatches($page, $id)
+    {
+        $_GET['page'] = $page;
+        $query = new Query();
+        $query->from('article_index');
+        $query->orderBy(['id' => SORT_ASC]);
+        $provider = new ActiveDataProvider([
+            'query' => $query,
+            'connection' => $this->getConnection(),
+            'pagination' => [
+                //'pageLimit' => 100,
+                'limit' => 1
+            ]
+        ]);
+        $this->assertEquals($id, $provider->getModels()[0]['id']);
+    }
+
+    public function providerAutoAdjustMaxMatches()
+    {
+        return [
+            [9999, 2],
+            [-1, 1]
+        ];
+    }
 }
