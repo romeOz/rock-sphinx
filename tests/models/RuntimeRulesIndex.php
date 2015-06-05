@@ -9,7 +9,7 @@ class RuntimeRulesIndex extends RuntimeIndex
     {
         return [
             [
-                self::RULE_VALIDATE, 'type_id', 'required', 'int'
+                'type_id', 'required', 'int'
             ],
         ];
     }
