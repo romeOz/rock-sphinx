@@ -2,9 +2,6 @@
 
 namespace rock\sphinx;
 
-use rock\helpers\Instance;
-
-
 /**
  * ActiveDataProvider is an enhanced version of {@see \rock\db\common\ActiveDataProvider} specific to the Sphinx.
  * It allows to fetch not only rows and total rows count, but also a meta information and facet results.
