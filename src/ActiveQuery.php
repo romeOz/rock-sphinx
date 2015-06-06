@@ -157,27 +157,25 @@ class ActiveQuery extends Query implements ActiveQueryInterface
      *
      * @param ConnectionInterface $connection the DB connection used to create the DB command.
      * If null, the DB connection returned by {@see \rock\db\ActiveQueryTrait::$modelClass} will be used.
-     * @param boolean       $subattributes
      * @return ActiveRecord|array|null a single row of query result. Depending on the setting of {@see \rock\db\ActiveQueryTrait::$asArray},
      * the query result may be either an array or an ActiveRecord object. Null will be returned
      * if the query results in nothing.
      */
-    public function one(ConnectionInterface $connection = null, $subattributes = false)
+    public function one(ConnectionInterface $connection = null)
     {
-        return parent::one($connection, $subattributes);
+        return parent::one($connection);
     }
 
     /**
      * Executes query and returns all results as an array.
      *
      * @param ConnectionInterface $connection the DB connection used to create the DB command.
-     * @param boolean       $subattributes
      * If null, the DB connection returned by {@see \rock\db\ActiveQueryTrait::$modelClass} will be used.
      * @return array|ActiveRecord[] the query results. If the query results in nothing, an empty array will be returned.
      */
-    public function all(ConnectionInterface $connection = null, $subattributes = false)
+    public function all(ConnectionInterface $connection = null)
     {
-        return parent::all($connection, $subattributes);
+        return parent::all($connection);
     }
 
     /**
