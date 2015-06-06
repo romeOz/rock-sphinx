@@ -55,14 +55,6 @@ use rock\helpers\Instance;
  */
 class ActiveDataProvider extends \rock\db\common\ActiveDataProvider
 {
-    public function init()
-    {
-        parent::init();
-        if (is_string($this->connection)) {
-            $this->connection = Instance::ensure($this->connection, Connection::className());
-        }
-    }
-
     /**
      * @var array search query meta info in format: name => value.
      */
