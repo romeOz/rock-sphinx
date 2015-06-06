@@ -568,6 +568,16 @@ class Query extends \rock\db\Query
         return $connection->createCommand($sql, $params)->getRawSql();
     }
 
+    public function refresh(ConnectionInterface $connection = null)
+    {
+        if (isset($connection)) {
+            $this->setConnection($connection);
+        }
+        $connection = $this->getConnection();
+        $connection->getQueryBuilder()->build($this);
+        return $this;
+    }
+
     /**
      * This method is called when the AR object is created and populated with the query result.
      *
