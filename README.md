@@ -3,7 +3,7 @@ ORM for Sphinx Search.
 
 This API [Sphinx](http://sphinxsearch.com/docs) full text search engine, which uses [SphinxQL](http://sphinxsearch.com/docs/current.html#sphinxql-reference).
 
-Independent fork by [Yii2 Sphinx Search](https://github.com/yiisoft/yii2/tree/master/extensions/sphinx).
+Independent fork by [Yii2 Sphinx Search 2.0.4](https://github.com/yiisoft/yii2-sphinx).
 
 [![Latest Stable Version](https://poser.pugx.org/romeOz/rock-sphinx/v/stable.svg)](https://packagist.org/packages/romeOz/rock-sphinx)
 [![Total Downloads](https://poser.pugx.org/romeOz/rock-sphinx/downloads.svg)](https://packagist.org/packages/romeOz/rock-sphinx)
@@ -27,21 +27,21 @@ Features
  * **Data Providers**
  * **Module for [Rock Framework](https://github.com/romeOz/rock)**
  
-> Bolded features are different from [Yii2 Sphinx Search](https://github.com/yiisoft/yii2/tree/master/extensions/sphinx).
+> Bolded features are different from [Yii2 Sphinx Search](https://github.com/yiisoft/yii2-sphinx).
 
 Installation
 -------------------
 
 From the Command Line:
 
-`composer require romeoz/rock-sphinx:*@dev`
+`composer require romeoz/rock-sphinx:*`
 
 In your composer.json:
 
 ```json
 {
     "require": {
-        "romeoz/rock-sphinx": "*@dev"
+        "romeoz/rock-sphinx": "*"
     }
 }
 ```

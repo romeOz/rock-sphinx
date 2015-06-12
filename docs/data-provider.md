@@ -24,9 +24,9 @@ class ArticlesIndex extends \rock\sphinx\ActiveRecord
         return new ArticleIndexQuery(get_called_class());
     }
 
-    public function getSourceArticlesDbLink()
+    public function getSource()
     {
-        return $this->hasOne(ArticlesDb::className(), ['id' => 'id', 'author_id' => 'author_id']);
+        return $this->hasOne(ArticlesDb::className(), ['id' => 'id']);
     }
 }
 ```
@@ -34,84 +34,55 @@ class ArticlesIndex extends \rock\sphinx\ActiveRecord
 The following is an example of using it to provide ActiveRecord instances:
 
 ```php
-$attribute = 'title'; 
-$highlight = 'about';
-$optionsSnippet = [
-  'limit' => 1000,
-  'before_match' => '<span>',
-  'after_match' => '</span>'
-];
-$optionsPagination = [
-    'limit' => 20,
-    'sort' => SORT_DESC,
-    'pageLimit' => 5,
-    'pageCurrent' => (int)$_GET['page'],
-];
-
 $provider = new ActiveDataProvider([
-   'query' => ArticlesDb::find()->orderBy('id ASC'),
-   'model' => ArticlesIndex::className(),
-   'callSnippets' => [
-       $attribute => [$highlight, $optionsSnippet],
-   ],
-   'pagination' => $optionsPagination
+    'query' => ArticleIndex::find()->match('foo')->asArray(),
+    'pagination' => ['limit' => 1, 'sort' => SORT_DESC, 'page' => (int)$_GET['page']]
 ]);
 
-$provider->get(); // returns list items in the current page
+$provider->getModels(); // returns list items in the current page
 $provider->getPagination(); // returns data pagination
 ```
 
 Use link to DB Model: 
 
 ```php
+$snippetCallback = function ($rows){
+    $result = [];
+    foreach ($rows as $row) {
+        $row = $row['source'];
+        $result[] = ['source.title' => $row['title'], 'source.content' => $row['content']];
+    }
+    return $result;
+};
+$snippetOptions = [
+    'before_match' => '<span>',
+    'after_match' => '</span>'
+];
+
+$query = ArticleIndex::find()
+                 ->snippetCallback($snippetCallback)
+                 ->snippetOptions($snippetOptions)
+                 ->with('source')
+                 ->match('foo')
+                 ->asArray();
+
 $provider = new ActiveDataProvider([
-   'query' => ArticlesIndex::find()->match('about')->with('articlesDbLink'),
-   'callSnippets' => [
-        $attribute => [$highlight, $optionsSnippet],
-   ],
-   'pagination' => $optionsPagination
+    'query' => $query,
+    'pagination' => ['limit' => 1, 'sort' => SORT_DESC, 'page' => (int)$_GET['page']]
 ]);
+
+$provider->getModels(); // returns list items in the current page
+$provider->getPagination(); // returns data pagination
 ```
 
 And the following example shows how to use ActiveDataProvider without ActiveRecord:
 
 ```php
-$config = [
-    'query' => (new \rock\db\Query())->from('articles'), // DB
-    'model' => ArticlesIndex::className(), // sphinx model
-    'callSnippets' => [
-        $attribute =>
-            [
-                $highlight,
-                $optionsSnippet
-            ],
-    ],
-    'pagination' => 
-];
-$provider = new ActiveDataProvider($config);
-
-$provider->get(); // returns list items in the current page
-$provider->getPagination(); // returns data pagination
-```
-
-Array data provider
--------------------
-
-ArrayDataProvider implements a data provider based on a data array.
-
-```php
-$link = 'articlesDbLink';
-$items = ArticlesIndex::find()->match('about')->with($link)->asArray()->all();
 $provider = new ActiveDataProvider([
-   'array' => $items,
-   'model' => ArticleIndex::className(),
-   'with' => $link,
-   'callSnippets' => [
-        $attribute => [$highlight, $optionsSnippet],
-   ],
-   'pagination' => $optionsPagination
+    'query' =>  (new Query())->from('article_index')->match('foo'),
+    'pagination' => ['limit' => 1, 'sort' => SORT_DESC, 'page' => (int)$_GET['page']]
 ]);
 
-$provider->get(); // returns list items in the current page
+$provider->getModels(); // returns list items in the current page
 $provider->getPagination(); // returns data pagination
 ```
