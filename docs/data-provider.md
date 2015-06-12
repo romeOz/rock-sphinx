@@ -40,7 +40,7 @@ $provider = new ActiveDataProvider([
 ]);
 
 $provider->getModels(); // returns list items in the current page
-$provider->getPagination(); // returns data pagination
+$provider->getPagination(); // returns pagination provider
 ```
 
 Use link to DB Model: 
@@ -72,7 +72,7 @@ $provider = new ActiveDataProvider([
 ]);
 
 $provider->getModels(); // returns list items in the current page
-$provider->getPagination(); // returns data pagination
+$provider->getPagination(); // returns pagination provider
 ```
 
 And the following example shows how to use ActiveDataProvider without ActiveRecord:
@@ -84,5 +84,5 @@ $provider = new ActiveDataProvider([
 ]);
 
 $provider->getModels(); // returns list items in the current page
-$provider->getPagination(); // returns data pagination
+$provider->getPagination(); // returns pagination provider
 ```
