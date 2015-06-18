@@ -3,6 +3,7 @@
 namespace rockunit;
 
 use rock\base\Alias;
+use rock\db\common\ConnectionInterface;
 use rock\db\Migration;
 use rock\helpers\ArrayHelper;
 use rock\helpers\Instance;
@@ -167,7 +168,7 @@ class SphinxTestCase extends \PHPUnit_Framework_TestCase
         return $connection;
     }
 
-    protected function applyMigrations(Connection $connection, array $migrations)
+    protected function applyMigrations(ConnectionInterface $connection, array $migrations)
     {
         foreach ($migrations as $config) {
             $config = array_merge(['connection' => $connection, 'enableVerbose' => false], $config);
