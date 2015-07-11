@@ -126,7 +126,7 @@ class Schema implements ObjectInterface
 
         if ($connection->enableSchemaCache === true && !in_array($name, $connection->schemaCacheExclude, true)) {
             /** @var CacheInterface $cache */
-            $cache = Instance::ensure($connection->schemaCache, null, false);
+            $cache = Instance::ensure($connection->schemaCache, null, [], false);
 
             if ($cache instanceof CacheInterface) {
                 $cacheKey = $this->getCacheKey($name);
@@ -306,7 +306,7 @@ class Schema implements ObjectInterface
     public function refresh()
     {
         /** @var CacheInterface $cache */
-        $cache = Instance::ensure($this->connection->schemaCache, null, false);
+        $cache = Instance::ensure($this->connection->schemaCache, null, [], false);
         if ($this->connection->enableSchemaCache && $cache instanceof CacheInterface) {
             $cache->removeTag($this->getCacheTag());
         }
