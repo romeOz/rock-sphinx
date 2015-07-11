@@ -2,13 +2,9 @@
 ## Project
 ############
 
-/build/
 vendor/
 composer.lock
-assets/*
-views/*
 *~
-
 
 ############
 ## Windows
