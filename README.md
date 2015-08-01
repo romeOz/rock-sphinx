@@ -22,10 +22,10 @@ Features
  * Support [Runtime Indexes](http://sphinxsearch.com/docs/current.html#rt-indexes)
  * [Call Snippets](http://sphinxsearch.com/docs/current.html#sphinxql-call-snippets)
  * Behaviors (TimestampBehavior,...)
+ * Data Provider (required by [Rock Data provider](https://github.com/romeOz/rock-dataprovider/))
  * **Validation and Sanitization rules for AR (Model)**
- * **Query Caching**
- * **Data Providers**
- * **Module for [Rock Framework](https://github.com/romeOz/rock)**
+ * **Query Caching** 
+ * **Standalone module/component for [Rock Framework](https://github.com/romeOz/rock)**
  
 > Bolded features are different from [Yii2 Sphinx Search](https://github.com/yiisoft/yii2-sphinx).
 
