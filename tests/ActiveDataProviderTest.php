@@ -19,13 +19,13 @@ class ActiveDataProviderTest extends SphinxTestCase
         parent::setUp();
         ActiveRecord::$connection = $this->getConnection(false);
         ActiveRecordDb::$connection = $this->getDbConnection();
-        unset($_GET['page']);
+        $_GET = [];
     }
 
     public static function tearDownAfterClass()
     {
         parent::tearDownAfterClass();
-        unset($_GET['page']);
+        $_GET = [];
     }
 
 
@@ -193,5 +193,32 @@ class ActiveDataProviderTest extends SphinxTestCase
             [9999, 2],
             [-1, 1]
         ];
+    }
+
+    public function testActiveQuerySort()
+    {
+        $provider = new ActiveDataProvider([
+            'connection' => $this->getConnection(false),
+            'query' =>  (new Query())->from('article_index'),
+            'sort' => [
+                'attributes' => ['id'],
+            ],
+            'pagination' => ['limit' => 1, 'sort' => SORT_DESC]
+        ]);
+
+        $this->assertEquals(1, $provider->getModels()[0]['id']);
+
+
+        $_GET['sort'] = '-id';
+        $provider = new ActiveDataProvider([
+            'connection' => $this->getConnection(false),
+            'query' =>  (new Query())->from('article_index'),
+            'sort' => [
+                'attributes' => ['id'],
+            ],
+            'pagination' => ['limit' => 1, 'sort' => SORT_DESC]
+        ]);
+
+        $this->assertEquals(2, $provider->getModels()[0]['id']);
     }
 }
