@@ -3,7 +3,7 @@
 namespace rock\sphinx;
 
 /**
- * ActiveDataProvider is an enhanced version of {@see \rock\db\ActiveDataProvider} specific to the Sphinx.
+ * ActiveDataProvider is an enhanced version of {@see \rock\data\ActiveDataProvider} specific to the Sphinx.
  * It allows to fetch not only rows and total rows count, but also a meta information and facet results.
  *
  * The following is an example of using ActiveDataProvider to provide facet results:
@@ -50,7 +50,7 @@ namespace rock\sphinx;
  * @property array $meta search query meta info in format: name => value.
  * @property array $facets query facet results.
  */
-class ActiveDataProvider extends \rock\db\ActiveDataProvider
+class ActiveDataProvider extends \rock\data\ActiveDataProvider
 {
     /**
      * @var array search query meta info in format: name => value.
