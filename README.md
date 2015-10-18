@@ -12,8 +12,6 @@ Independent fork by [Yii2 Sphinx Search 2.0.4](https://github.com/yiisoft/yii2-s
 [![Coverage Status](https://coveralls.io/repos/romeOz/rock-sphinx/badge.svg?branch=master)](https://coveralls.io/r/romeOz/rock-sphinx?branch=master)
 [![License](https://poser.pugx.org/romeOz/rock-sphinx/license.svg)](https://packagist.org/packages/romeOz/rock-sphinx)
 
-[Rock Sphinx on Packagist](https://packagist.org/packages/romeOz/rock-sphinx)
-
 Features
 -------------------
  
@@ -22,7 +20,7 @@ Features
  * Support [Runtime Indexes](http://sphinxsearch.com/docs/current.html#rt-indexes)
  * [Call Snippets](http://sphinxsearch.com/docs/current.html#sphinxql-call-snippets)
  * Behaviors (TimestampBehavior,...)
- * Data Provider (required by [Rock Data provider](https://github.com/romeOz/rock-dataprovider/))
+ * Data Provider
  * **Validation and Sanitization rules for AR (Model)**
  * **Query Caching** 
  * **Standalone module/component for [Rock Framework](https://github.com/romeOz/rock)**
@@ -82,11 +80,12 @@ Documentation
 Requirements
 -------------------
 
- * **PHP 5.4+**
- * [Rock Cache](https://github.com/romeOz/rock-cache) **(optional)**. Should be installed: `composer require romeoz/rock-cache:*`
- * [Rock Validate](https://github.com/romeOz/rock-validate) **(optional)**. Should be installed: `composer require romeoz/rock-validate:*`
- * [Rock Sanitize](https://github.com/romeOz/rock-sanitize) **(optional)**. Should be installed: `composer require romeoz/rock-sanitize:*`
- * [Rock Behaviors](https://github.com/romeOz/rock-behaviors) **(optional)**. Should be installed: `composer require romeoz/rock-behaviors:*`
+ * PHP 5.4+
+ * For validation rules a model required [Rock Validate](https://github.com/romeOz/rock-validate): `composer require romeoz/rock-validate`
+ * For sanitization rules a model required [Rock Sanitize](https://github.com/romeOz/rock-sanitize): `composer require romeoz/rock-sanitize`
+ * For using behaviors a model required [Rock Behaviors](https://github.com/romeOz/rock-behaviors): `composer require romeoz/rock-behaviors`
+ * For using Data Provider required [Rock Data Provider](https://github.com/romeOz/rock-dataprovider/): `composer require romeoz/rock-dataprovider`
+ * For caching queries required [Rock Cache](https://github.com/romeOz/rock-behaviors): `composer require romeoz/rock-cache` 
 
 License
 -------------------

@@ -278,7 +278,7 @@ class ActiveRecordTest extends SphinxTestCase
 
     public function testCache()
     {
-        if (!interface_exists('\rock\cache\CacheInterface') || !class_exists('\League\Flysystem\Filesystem')) {
+        if (!interface_exists('\rock\cache\CacheInterface')) {
             $this->markTestSkipped('Rock cache not installed.');
         }
 
