@@ -19,13 +19,13 @@ class ActiveDataProviderTest extends SphinxTestCase
         parent::setUp();
         ActiveRecord::$connection = $this->getConnection(false);
         ActiveRecordDb::$connection = $this->getDbConnection();
-        $_GET = [];
+        $_SERVER['QUERY_STRING'] = '';
     }
 
     public static function tearDownAfterClass()
     {
         parent::tearDownAfterClass();
-        $_GET = [];
+        $_SERVER['QUERY_STRING'] = '';
     }
 
 
@@ -36,7 +36,7 @@ class ActiveDataProviderTest extends SphinxTestCase
      */
     public function testQuery($page, $id)
     {
-        $_GET['page'] = $page;
+        $_SERVER['QUERY_STRING'] = "page=$page";
         $provider = new ActiveDataProvider([
             'connection' => $this->getConnection(false),
             'query' =>  (new Query())->from('article_index'),
@@ -66,7 +66,7 @@ class ActiveDataProviderTest extends SphinxTestCase
      */
     public function testActiveQuery($page, $content)
     {
-        $_GET['page'] = $page;
+        $_SERVER['QUERY_STRING'] = "page=$page";
         $snippetCallback = function ($rows){
             $result = [];
             foreach ($rows as $row) {
@@ -172,7 +172,7 @@ class ActiveDataProviderTest extends SphinxTestCase
      */
     public function testAutoAdjustMaxMinMatches($page, $id)
     {
-        $_GET['page'] = $page;
+        $_SERVER['QUERY_STRING'] = "page=$page";
         $query = new Query();
         $query->from('article_index');
         $query->orderBy(['id' => SORT_ASC]);
@@ -208,8 +208,7 @@ class ActiveDataProviderTest extends SphinxTestCase
 
         $this->assertEquals(1, $provider->getModels()[0]['id']);
 
-
-        $_GET['sort'] = '-id';
+        $_SERVER['QUERY_STRING'] = 'sort=-id';
         $provider = new ActiveDataProvider([
             'connection' => $this->getConnection(false),
             'query' =>  (new Query())->from('article_index'),
